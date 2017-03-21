@@ -1,5 +1,15 @@
 {
   "short_name": "nyhren.se",
   "name": "Andreas Nyhrén",
-  "theme_color": "dimgrey"
+  "theme_color": "dimgrey",
+  "background_color": "darkgrey",
+  "icons": [{
+    "src": "check_circle_grey_144x144.png",
+    "sizes": "144x144",
+    "type": "image/png"
+  	},{
+    "src": "check_circle_grey_192x192.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }],
 }
