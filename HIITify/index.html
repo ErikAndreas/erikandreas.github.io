@@ -15,7 +15,19 @@
   crossorigin="anonymous"></script>
 </head>
 <body>
+playlists
+<select id="playlists">
+</select>
+<a onclick="analyze()">Analyze</a>
 <script>
+/* UI
+/
+about + connect
+/home
+select device + rescan
+hiitfy ui
+	
+*/
 	var client_id = '9d4ecfc733cf415887763c509a274bc5';
 	var token;
 	var userId;
@@ -63,14 +75,18 @@
 		});
 
 */
-		//getPlayLists(0, 50);
+		$('#playlists').empty()
+		getPlayLists(0, 50);
 		function getPlayLists(offset, limit) {
 			$.ajax({
 	    		url: "https://api.spotify.com/v1/users/spoteafy/playlists?limit="+limit+"&offset="+offset,
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
 	  			for (var i = 0; i < data.items.length; i++) {
-	  				console.log(data.items[i].name); //TODO: add .id to model
+	  				//console.log(data.items[i].name); //TODO: add .id to model
+	  				$('#playlists')
+	  					.append($('<option>', { value : data.items[i].id })
+          				.text(data.items[i].name)); 
 	  			}
 	  			if (data.next) {
 	  				getPlayLists(data.offset + data.limit, data.limit);
@@ -78,16 +94,24 @@
 			});
 		}
 
-		getPlaylistTracks(0,100,'36mznVrHrLg16IWs4CTHAR');
-		function getPlaylistTracks(offset,limit,playlist,href) {
+		function analyze() {
+			//console.log($('#playlists').val());
+			getPlaylistTracks(0,100,$('#playlists').val(),null, function(data) {
+				console.log(data);
+			});
+		}
+
+		//getPlaylistTracks(0,100,'36mznVrHrLg16IWs4CTHAR');
+		function getPlaylistTracks(offset,limit,playlist,href, cb) {
 			$.ajax({
 	    		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable)),next,offset,limit&limit="+limit+"&offset="+offset,
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
-				console.log(data);
+				//console.log(data);
 				if (data.next) {
-	  				getPlaylistTracks(data.offset + data.limit, data.limit,null,data.next);
+	  				getPlaylistTracks(data.offset + data.limit, data.limit,null,data.next,cb);
 	  			}
+	  			cb(data);
 			});
 		}
 	}
