@@ -19,6 +19,8 @@ playlists
 <select id="playlists">
 </select>
 <a onclick="analyze()">Analyze</a>
+
+<a onclick="play()">Play</a>
 <script>
 /* UI
 /
@@ -52,29 +54,49 @@ hiitfy ui
 			userId = data.id
   			console.log(userId);
 		});		
-/*
-		$.ajax({
-    		url: "https://api.spotify.com/v1/me/player/play",
-    		headers: {"Authorization": "Bearer "+token},
-    		type: 'PUT',
-    		data: JSON.stringify(
-            {
-            	"uris":["spotify:track:67jL5ZAf8hNsRZrfBHNuBT"]
-        	}             
-        	),
-        	contentType: "application/json"
-		}).done(function(data) {
-			$.ajax({
-	    		url: "https://api.spotify.com/v1/me/player/seek?position_ms=25000",
-	    		type: 'PUT',
-	    		contentType: "application/json",
-	    		headers: {"Authorization": "Bearer "+token}
-			}).done(function(data) {
-	  			console.log(data);
-			});  			
-		});
 
-*/
+		function startSong(id, startPos) {
+			$.ajax({
+	    		url: "https://api.spotify.com/v1/me/player/play",
+	    		headers: {"Authorization": "Bearer "+token},
+	    		type: 'PUT',
+	    		data: JSON.stringify(
+	            {
+	            	"uris":["spotify:track:"+id]
+	        	}             
+	        	),
+	        	contentType: "application/json"
+			}).done(function(data) {
+				$.ajax({
+		    		url: "https://api.spotify.com/v1/me/player/seek?position_ms="+Math.round(startPos * 1000),
+		    		type: 'PUT',
+		    		contentType: "application/json",
+		    		headers: {"Authorization": "Bearer "+token}
+				}).done(function(data) {
+		  			console.log("start playing "+id + " at " + startPos);
+				});  			
+			});
+		}
+
+		var playIntId;
+		var currSong = 0;
+		function play() {
+			currSong = 0;
+			console.log(playlistTracks, analysis);
+			playIntId = setInterval(handlePlay, 10000);
+		}
+
+		function handlePlay() {
+			console.log(playlistTracks[currSong], analysis[playlistTracks[currSong]]);
+			if (currSong < playlistTracks.length) {
+				startSong(playlistTracks[currSong], analysis[playlistTracks[currSong]]);
+				currSong++;
+			} else {
+				clearInterval(playIntId);
+			}
+		}
+
+
 		$('#playlists').empty()
 		getPlayLists(0, 50);
 		function getPlayLists(offset, limit) {
@@ -83,7 +105,6 @@ hiitfy ui
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
 	  			for (var i = 0; i < data.items.length; i++) {
-	  				//console.log(data.items[i].name); //TODO: add .id to model
 	  				$('#playlists')
 	  					.append($('<option>', { value : data.items[i].id })
           				.text(data.items[i].name)); 
@@ -94,27 +115,88 @@ hiitfy ui
 			});
 		}
 
+		var outgoing = 0;
 		function analyze() {
-			//console.log($('#playlists').val());
-			getPlaylistTracks(0,100,$('#playlists').val(),null, function(data) {
-				console.log(data);
+			getPlaylistTracks(0,100,$('#playlists').val(),null, function(data, next) {
+				var ids = "";
+				outgoing += data.items.length;
+				for (var i = 0; i < data.items.length; i++) {
+					if (i > 0) ids += ",";
+					ids += data.items[i].track.id;
+					playlistTracks.push(data.items[i].track.id);
+				}
+				getAudioFeatures(ids);
+				if (!next) {
+					console.log('playlist tracks done ' + outgoing);
+				}
 			});
 		}
 
-		//getPlaylistTracks(0,100,'36mznVrHrLg16IWs4CTHAR');
+		var playlistTracks = [];
+		var analysis = [];
+
 		function getPlaylistTracks(offset,limit,playlist,href, cb) {
 			$.ajax({
 	    		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable)),next,offset,limit&limit="+limit+"&offset="+offset,
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
-				//console.log(data);
-				if (data.next) {
+				if (data && data.next) {
 	  				getPlaylistTracks(data.offset + data.limit, data.limit,null,data.next,cb);
-	  			}
-	  			cb(data);
+	  			} 
+	  			cb(data, data.next);
+			});
+		}
+
+		function handleErrors(response) {
+		    if (!response.ok) {
+		        throw Error(response.statusText);
+		    }
+		    return response;
+		}
+
+		function getAudioFeatures(ids) {
+			// max 100 ids
+			$.ajax({
+	    		url: "https://api.spotify.com/v1/audio-features/?ids="+ids,
+	    		headers: {"Authorization": "Bearer "+token}
+			}).done(function(data) {
+				console.log(data);
+				for (var i = 0; i < data.audio_features.length; i++) {
+					//console.log(data.audio_features[i].id + " "+ data.audio_features[i].loudness);
+					var req = new Request(data.audio_features[i].analysis_url,{
+						headers: new Headers({
+							"Authorization": "Bearer "+token
+						})
+					});
+					fetch(req)
+					.then(handleErrors)
+					.then(function(response) {
+						Promise.all([Promise.resolve(response.url), response.json()]).then(function(o){
+							var url = o[0];
+							var data = o[1];
+							var loudness = data.track.loudness;
+							var eofi = data.track.end_of_fade_in;
+							var startAt = 0;
+							for (var i = 0; i < data.sections.length;i++) {
+								if (data.sections[i].duration >= 20 && data.sections[i].loudness > loudness) {
+									startAt = data.sections[i].start;
+									break;
+								}
+							}
+							startAt = Math.max(startAt, eofi);
+							var str = "/audio-analysis/"
+							var id = url.substring(url.lastIndexOf(str)+ str.length);
+							console.log(url, id, startAt);
+							analysis[id] = startAt;
+						});
+					}).catch(function(error) {
+						console.log(error);
+					});
+				}	
 			});
 		}
 	}
+
 </script>
 
 </body>
