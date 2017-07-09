@@ -121,9 +121,14 @@ hiitfy ui
 				var ids = "";
 				outgoing += data.items.length;
 				for (var i = 0; i < data.items.length; i++) {
-					if (i > 0) ids += ",";
-					ids += data.items[i].track.id;
-					playlistTracks.push(data.items[i].track.id);
+					if (data.items[i].track.is_playable) {
+						if (i > 0) ids += ",";
+						ids += data.items[i].track.id;
+						//console.log(data.items[i]);
+						playlistTracks.push(data.items[i].track.id);
+					} else {
+						console.log('track not available', data.items[i].track);
+					}
 				}
 				getAudioFeatures(ids);
 				if (!next) {
@@ -137,7 +142,7 @@ hiitfy ui
 
 		function getPlaylistTracks(offset,limit,playlist,href, cb) {
 			$.ajax({
-	    		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable)),next,offset,limit&limit="+limit+"&offset="+offset,
+	    		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable)),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
 				if (data && data.next) {
@@ -160,38 +165,45 @@ hiitfy ui
 	    		url: "https://api.spotify.com/v1/audio-features/?ids="+ids,
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
-				console.log(data);
+				//console.log(data);
 				for (var i = 0; i < data.audio_features.length; i++) {
 					//console.log(data.audio_features[i].id + " "+ data.audio_features[i].loudness);
-					var req = new Request(data.audio_features[i].analysis_url,{
-						headers: new Headers({
-							"Authorization": "Bearer "+token
-						})
-					});
-					fetch(req)
-					.then(handleErrors)
-					.then(function(response) {
-						Promise.all([Promise.resolve(response.url), response.json()]).then(function(o){
-							var url = o[0];
-							var data = o[1];
-							var loudness = data.track.loudness;
-							var eofi = data.track.end_of_fade_in;
-							var startAt = 0;
-							for (var i = 0; i < data.sections.length;i++) {
-								if (data.sections[i].duration >= 20 && data.sections[i].loudness > loudness) {
-									startAt = data.sections[i].start;
-									break;
-								}
-							}
-							startAt = Math.max(startAt, eofi);
-							var str = "/audio-analysis/"
-							var id = url.substring(url.lastIndexOf(str)+ str.length);
-							console.log(url, id, startAt);
-							analysis[id] = startAt;
+					var lsid = localStorage.getItem(data.audio_features[i].id);
+					if (!lsid) {
+						var req = new Request(data.audio_features[i].analysis_url,{
+							headers: new Headers({
+								"Authorization": "Bearer "+token
+							})
 						});
-					}).catch(function(error) {
-						console.log(error);
-					});
+						fetch(req)
+						.then(handleErrors)
+						.then(function(response) {
+							Promise.all([Promise.resolve(response.url), response.json()]).then(function(o){
+								var url = o[0];
+								var data = o[1];
+								var loudness = data.track.loudness;
+								var eofi = data.track.end_of_fade_in;
+								var startAt = 0;
+								for (var i = 0; i < data.sections.length;i++) {
+									if (data.sections[i].duration >= 20 && data.sections[i].loudness > loudness) {
+										startAt = data.sections[i].start;
+										break;
+									}
+								}
+								startAt = Math.max(startAt, eofi);
+								var str = "/audio-analysis/"
+								var id = url.substring(url.lastIndexOf(str)+ str.length);
+								console.log(url, id, startAt);
+								localStorage.setItem(id, startAt);
+								analysis[id] = startAt;
+							});
+						}).catch(function(error) {
+							console.log(error);
+						});
+					} else {
+						analysis[data.audio_features[i].id] = lsid;
+						console.log("already got " + data.audio_features[i].id + " in cache");
+					}
 				}	
 			});
 		}
