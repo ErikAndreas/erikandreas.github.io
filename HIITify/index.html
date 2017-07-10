@@ -13,6 +13,7 @@
   src="https://code.jquery.com/jquery-3.2.1.min.js"
   integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
   crossorigin="anonymous"></script>
+  <script type="text/javascript" src="timer.js"></script>
 </head>
 <body>
 playlists
@@ -21,6 +22,9 @@ playlists
 <a onclick="analyze()">Analyze</a>
 
 <a onclick="play()">Play</a>
+<a onclick="start()">Start</a>
+<div id="tot"></div>
+<div id="curr"></div>
 <script>
 /* UI
 /
@@ -30,6 +34,43 @@ select device + rescan
 hiitfy ui
 	
 */
+
+var totTime = 30;
+var loTime = 4;
+var hiTime = 5;
+var isHigh = false;
+var totTimer = new Timer({
+	tick: 250,
+	onend: function() {
+		loTimer.stop();
+		hiTimer.stop();
+		pauseSong();
+		console.log('tot end');
+	},
+	ontick: function() {
+		console.log('ontick');
+		$("#tot").text(Math.floor(totTimer.getDuration()/1000).toMMSS());
+		$("#curr").text(Math.floor(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000).toSS());
+	}
+});
+var loTimer = new Timer({
+	onstart: function() {console.log('lo start');isHigh=false;handlePlay();},
+	onend: function() {hiTimer.start(hiTime); console.log('lo end');}
+});
+var hiTimer = new Timer({
+	onstart: function() {console.log('hi start');isHigh=true;handlePlay();},
+	onend: function() {loTimer.start(loTime);console.log('hi end');}
+});
+
+function fixTotTime() {
+	var cycle = loTime + hiTime;
+	return Math.ceil(totTime / cycle)*cycle; 
+}
+
+function start() {
+	totTimer.start(fixTotTime(totTime));
+	loTimer.start(loTime);
+}
 	var client_id = '9d4ecfc733cf415887763c509a274bc5';
 	var token;
 	var userId;
@@ -78,21 +119,29 @@ hiitfy ui
 			});
 		}
 
+		function pauseSong() {
+			$.ajax({
+	    		url: "https://api.spotify.com/v1/me/player/pause",
+	    		headers: {"Authorization": "Bearer "+token},
+	    		type: 'PUT',
+	        	contentType: "application/json"
+			}).done(function(data) {
+		  		console.log("paused"); 			
+			});
+		}
+
 		var playIntId;
 		var currSong = 0;
 		function play() {
 			currSong = 0;
 			console.log(playlistTracks, analysis);
-			playIntId = setInterval(handlePlay, 10000);
 		}
 
 		function handlePlay() {
-			console.log(playlistTracks[currSong], analysis[playlistTracks[currSong]]);
+			console.log(playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
 			if (currSong < playlistTracks.length) {
-				startSong(playlistTracks[currSong], analysis[playlistTracks[currSong]]);
+				startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id]);
 				currSong++;
-			} else {
-				clearInterval(playIntId);
 			}
 		}
 
@@ -125,7 +174,7 @@ hiitfy ui
 						if (i > 0) ids += ",";
 						ids += data.items[i].track.id;
 						//console.log(data.items[i]);
-						playlistTracks.push(data.items[i].track.id);
+						playlistTracks.push(data.items[i].track);
 					} else {
 						console.log('track not available', data.items[i].track);
 					}
@@ -142,7 +191,7 @@ hiitfy ui
 
 		function getPlaylistTracks(offset,limit,playlist,href, cb) {
 			$.ajax({
-	    		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable)),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
+	    		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
 	    		headers: {"Authorization": "Bearer "+token}
 			}).done(function(data) {
 				if (data && data.next) {
@@ -208,6 +257,23 @@ hiitfy ui
 			});
 		}
 	}
+
+Number.prototype.toMMSS = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var minutes = Math.floor(sec_num / 60);
+    var seconds = sec_num - (minutes * 60);
+
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return minutes+':'+seconds;
+}
+
+Number.prototype.toSS = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var seconds = sec_num;
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return seconds;
+}
 
 </script>
 
