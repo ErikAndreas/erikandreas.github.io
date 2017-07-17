@@ -138,9 +138,11 @@ function getPlayLists(offset, limit) {
 		url: "https://api.spotify.com/v1/users/spoteafy/playlists?limit="+limit+"&offset="+offset,
 		headers: {"Authorization": "Bearer "+token}
 	}).done(function(data) {
+		console.log(data);
 			for (var i = 0; i < data.items.length; i++) {
 				$('#playlists')
-					.append($('<option>', { value : data.items[i].id })
+					//.append($('<option>', { value : data.items[i].id })
+					.append($('<option>', { value : data.items[i].href })	
   				.text(data.items[i].name)); 
 			}
 			if (data.next) {
@@ -171,8 +173,9 @@ function analyze() {
 }
 
 function getPlaylistTracks(offset,limit,playlist,href, cb) {
+	//"https://api.spotify.com/v1/users/spoteafy/playlists/"+
 	$.ajax({
-		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,duration_ms,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
+		url: href!=null?href:playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,duration_ms,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
 		headers: {"Authorization": "Bearer "+token}
 	}).done(function(data) {
 		if (data && data.next) {
