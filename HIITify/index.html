@@ -41,6 +41,8 @@ var totTime = 120;
 var loTime = 60;
 var hiTime = 60;
 var isHigh = false;
+var isPlaying = false;
+var songRemaining = -1;
 var totTimer = new Timer({
 	tick: 250,
 	onend: function() {
@@ -55,11 +57,16 @@ var totTimer = new Timer({
 		$("#curr").text(Math.floor(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000).toSS());
 		// TODO: check curr interval if interval < track.duration_ms - startAt -> restart track
 	    //60-45 - left > 0
-		console.log((isHigh?hiTime:loTime),(playlistTracks[currSong].duration_ms/1000),parseFloat(analysis[playlistTracks[currSong].id]),(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
-		console.log((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
-			if ((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000) > 0) {
-				console.log("RESTART")
-			} 
+	    songRemaining = (isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000);
+		//console.log((isHigh?hiTime:loTime),(playlistTracks[currSong].duration_ms/1000),parseFloat(analysis[playlistTracks[currSong].id]),(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
+		//console.log((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
+		
+		if (songRemaining > 0 && (Math.ceil(songRemaining + 0.750)==1)) {
+			console.log("RESTART");
+			console.log((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
+			if (isPlaying)
+				handlePlay();
+		} 
 			
 	}
 });
@@ -116,6 +123,7 @@ function start() {
 }
 
 function handlePlay() {
+	isPlaying = false;
 	console.log(currSong, playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
 	if (currSong < playlistTracks.length) {
 		startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id]);
@@ -248,6 +256,7 @@ function startSong(id, startPos) {
     		contentType: "application/json",
     		headers: {"Authorization": "Bearer "+token}
 		}).done(function(data) {
+			isPlaying = true;
   			console.log("start playing "+id + " at " + startPos);
 		});  			
 	});
@@ -260,6 +269,7 @@ function pauseSong() {
 		type: 'PUT',
     	contentType: "application/json"
 	}).done(function(data) {
+		isPlaying = false;
   		console.log("paused"); 			
 	});
 }
