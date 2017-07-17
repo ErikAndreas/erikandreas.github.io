@@ -37,9 +37,9 @@ hiitfy ui
 	
 */
 
-var totTime = 60;
-var loTime = 8;
-var hiTime = 12;
+var totTime = 120;
+var loTime = 60;
+var hiTime = 60;
 var isHigh = false;
 var totTimer = new Timer({
 	tick: 250,
@@ -50,23 +50,35 @@ var totTimer = new Timer({
 		console.log('tot end');
 	},
 	ontick: function() {
-		console.log('ontick');
+		//console.log('ontick');
 		$("#tot").text(Math.floor(totTimer.getDuration()/1000).toMMSS());
 		$("#curr").text(Math.floor(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000).toSS());
+		// TODO: check curr interval if interval < track.duration_ms - startAt -> restart track
+	    //60-45 - left > 0
+		console.log((isHigh?hiTime:loTime),(playlistTracks[currSong].duration_ms/1000),parseFloat(analysis[playlistTracks[currSong].id]),(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
+		console.log((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
+			if ((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000) > 0) {
+				console.log("RESTART")
+			} 
+			
 	}
 });
 var loTimer = new Timer({
-	onstart: function() {console.log('lo start');isHigh=false;handlePlay();},
-	onend: function() {hiTimer.start(hiTime); console.log('lo end');}
+	onstart: function() {console.log('lo start');handlePlay();},
+	onend: function() {isHigh=true;++currSong;hiTimer.start(hiTime); console.log('lo end');}
 });
 var hiTimer = new Timer({
-	onstart: function() {console.log('hi start');isHigh=true;handlePlay();},
-	onend: function() {loTimer.start(loTime);console.log('hi end');}
+	onstart: function() {console.log('hi start');handlePlay();},
+	onend: function() {isHigh=false;++currSong;loTimer.start(loTime);console.log('hi end');}
 });
 
 var client_id = '9d4ecfc733cf415887763c509a274bc5';
 var token;
 var userId;
+var outgoing = 0;
+var playlistTracks = [];
+var analysis = [];
+var currSong = 0;
 if (!token &&!location.hash) {
 	window.location.replace('https://accounts.spotify.com/authorize?client_id='+client_id+'&redirect_uri=http%3A%2F%2Flocalhost%3A8080&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
 } else {
@@ -88,13 +100,8 @@ if (!token &&!location.hash) {
 		userId = data.id
 			console.log(data);
 	});		
-
-	var currSong = 0;
 	$('#playlists').empty()
 	getPlayLists(0, 50);
-	var outgoing = 0;
-	var playlistTracks = [];
-	var analysis = [];
 }
 
 function fixTotTime() {
@@ -103,18 +110,18 @@ function fixTotTime() {
 }
 
 function start() {
+	currSong = 0;
 	totTimer.start(fixTotTime(totTime));
 	loTimer.start(loTime);
 }
 
 function handlePlay() {
-	console.log(playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
+	console.log(currSong, playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
 	if (currSong < playlistTracks.length) {
 		startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id]);
 		$("#artist").text(playlistTracks[currSong].artists[0].name);
 		$("#title").text(playlistTracks[currSong].name);
 		$("#artwork").attr("src", playlistTracks[currSong].album.images[0].url);
-		currSong++;
 	}
 }
 
@@ -157,7 +164,7 @@ function analyze() {
 
 function getPlaylistTracks(offset,limit,playlist,href, cb) {
 	$.ajax({
-		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
+		url: href!=null?href:"https://api.spotify.com/v1/users/spoteafy/playlists/"+playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,duration_ms,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
 		headers: {"Authorization": "Bearer "+token}
 	}).done(function(data) {
 		if (data && data.next) {
