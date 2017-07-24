@@ -37,9 +37,9 @@ hiitfy ui
 	
 */
 
-var totTime = 120;
-var loTime = 60;
-var hiTime = 60;
+var totTime = 1*60;
+var loTime = 15;
+var hiTime = 10;
 var isHigh = false;
 var isPlaying = false;
 var songRemaining = -1;
@@ -82,32 +82,34 @@ var hiTimer = new Timer({
 var client_id = '9d4ecfc733cf415887763c509a274bc5';
 var token;
 var userId;
+var userCountry;
 var outgoing = 0;
 var playlistTracks = [];
 var analysis = [];
 var currSong = 0;
 if (!token &&!location.hash) {
-	window.location.replace('https://accounts.spotify.com/authorize?client_id='+client_id+'&redirect_uri=http%3A%2F%2Flocalhost%3A8080&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
+	spotifyLogin();
 } else {
 	var o = new URLSearchParams(location.hash.substring(1));
 	//TODO: check state matches
 	token = o.get('access_token');
 	console.log(token);
-	$.ajax({
-		url: "https://api.spotify.com/v1/me/player/devices",
-		headers: {"Authorization": "Bearer "+token}
-	}).done(function(data) {
+	fetch(spotifyReq("https://api.spotify.com/v1/me/player/devices"))
+		.then(handleErrors)
+		.then((response) => {return response.json();})
+		.then((data) => {
+		// if 202 response, retry after 5 secs, 5 retries -> 200 with empty device list.
 			console.log(data);
-	});
-
-	$.ajax({
-		url: "https://api.spotify.com/v1/me",
-		headers: {"Authorization": "Bearer "+token}
-	}).done(function(data) {
-		userId = data.id
+		});
+	fetch(spotifyReq("https://api.spotify.com/v1/me"))
+		.then(handleErrors)
+		.then((response) => {return response.json();})
+		.then((data) => {
+			userId = data.id;
+			userCountry = data.country;
 			console.log(data);
-	});		
-	$('#playlists').empty()
+		});
+	$('#playlists').empty();
 	getPlayLists(0, 50);
 }
 
@@ -134,24 +136,26 @@ function handlePlay() {
 }
 
 function getPlayLists(offset, limit) {
-	$.ajax({
-		url: "https://api.spotify.com/v1/users/spoteafy/playlists?limit="+limit+"&offset="+offset,
-		headers: {"Authorization": "Bearer "+token}
-	}).done(function(data) {
-		console.log(data);
-			for (var i = 0; i < data.items.length; i++) {
-				$('#playlists')
-					//.append($('<option>', { value : data.items[i].id })
-					.append($('<option>', { value : data.items[i].href })	
-  				.text(data.items[i].name)); 
-			}
+	fetch(spotifyReq("https://api.spotify.com/v1/users/spoteafy/playlists?limit="+limit+"&offset="+offset))
+		.then(handleErrors)
+		.then((response) => {return response.json();})
+		.then((data) => {
+			console.log(data);
+			data.items.forEach((pl) => {
+				$('#playlists')					
+					.append($('<option>', { value : pl.href })	
+  				.text(pl.name));
+			});
 			if (data.next) {
 				getPlayLists(data.offset + data.limit, data.limit);
 			}
-	});
+		});
 }
 
 function analyze() {
+	// reset any previous analyzis (and current playlist tracks)
+	playlistTracks = [];
+	analysis = [];
 	getPlaylistTracks(0,100,$('#playlists').val(),null, function(data, next) {
 		var ids = "";
 		outgoing += data.items.length;
@@ -175,7 +179,7 @@ function analyze() {
 function getPlaylistTracks(offset,limit,playlist,href, cb) {
 	//"https://api.spotify.com/v1/users/spoteafy/playlists/"+
 	$.ajax({
-		url: href!=null?href:playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,duration_ms,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market=SE",
+		url: href!=null?href:playlist+"/tracks?fields=items(track(name,id,is_local,is_playable,duration_ms,album(images),artists(name))),next,offset,limit&limit="+limit+"&offset="+offset+"&market="+userCountry,
 		headers: {"Authorization": "Bearer "+token}
 	}).done(function(data) {
 		if (data && data.next) {
@@ -187,7 +191,12 @@ function getPlaylistTracks(offset,limit,playlist,href, cb) {
 
 function handleErrors(response) {
     if (!response.ok) {
-        throw Error(response.statusText);
+    	if (response.status === 401) {
+    		console.log('no auth');
+    		spotifyLogin();
+    	} else {
+        	throw Error(response.statusText);
+        }
     }
     return response;
 }
@@ -241,6 +250,25 @@ function getAudioFeatures(ids) {
 	});
 }
 
+function spotifyReq(url) {
+	return new Request(url,{
+		headers: new Headers({
+			"Authorization": "Bearer "+token
+		})
+	});
+}
+
+function spotifyPutReq(url, body) {
+	return new Request(url,{
+		method: 'PUT',
+		headers: new Headers({
+			"Authorization": "Bearer "+token,
+			"Content-Type": "application/json"
+		}),
+		body: body
+	});
+}
+
 function startSong(id, startPos) {
 	$.ajax({
 		url: "https://api.spotify.com/v1/me/player/play",
@@ -261,7 +289,13 @@ function startSong(id, startPos) {
 		}).done(function(data) {
 			isPlaying = true;
   			console.log("start playing "+id + " at " + startPos);
-		});  			
+		});  
+/*
+		fetch(spotifyPutReq("https://api.spotify.com/v1/me/player/seek?position_ms="+Math.round(startPos * 1000)))
+			.then(handleErrors)
+			.then(function(response) {
+				return response.json();
+			})*/
 	});
 }
 
@@ -275,6 +309,10 @@ function pauseSong() {
 		isPlaying = false;
   		console.log("paused"); 			
 	});
+}
+
+function spotifyLogin() {
+	window.location.replace('https://accounts.spotify.com/authorize?client_id='+client_id+'&redirect_uri=http%3A%2F%2Flocalhost%3A8080&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
 }
 
 Number.prototype.toMMSS = function () {
