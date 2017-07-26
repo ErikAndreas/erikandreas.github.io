@@ -82,7 +82,7 @@ var Spotify = {
 			.then(Spotify.handleErrors)
 			.then((data) => {			
 				fetch(Spotify.put("https://api.spotify.com/v1/me/player/seek?position_ms="+Math.round(startPos * 1000)))
-	    			.then(handleErrors)
+	    			.then(Spotify.handleErrors)
 					.then((data) => {
 						Spotify.isPlaying = true;
 	  					console.log("start playing "+id + " at " + startPos);
