@@ -1,4 +1,5 @@
 "use strict"
+var elPlaylists = document.getElementById("playlists");
 var App = {
 	client_id: '9d4ecfc733cf415887763c509a274bc5',
 	init: function() {
@@ -15,11 +16,20 @@ var App = {
 			Spotify.me().then((data) => {				
 				console.log(data);
 			});		
-			$('#playlists').empty();	
+			rmOptions(elPlaylists);
 			getPlayLists(0, 50);
 		}
 	}
 };
+
+function rmOptions(el) {
+	let i;
+	if (el.options) {
+    	for(i = el.options.length - 1 ;i >= 0 ; i--) {
+        	el.remove(i);
+    	}	
+	}
+}
 
 /* UI
 /
@@ -29,6 +39,11 @@ select device + rescan
 hiitfy ui
 	
 */
+var elTot = document.getElementById("tot");
+var elCurr = document.getElementById("curr");
+var elArtist = document.getElementById("artist");
+var elTitle = document.getElementById("title");	
+var elArtwork = document.getElementById("artwork");
 
 var totTime = 1*60;
 var loTime = 15;
@@ -45,8 +60,8 @@ var totTimer = new Timer({
 	},
 	ontick: function() {
 		//console.log('ontick');
-		$("#tot").text(Math.floor(totTimer.getDuration()/1000).toMMSS());
-		$("#curr").text(Math.floor(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000).toSS());
+		elTot.innerHTML=Math.floor(totTimer.getDuration()/1000).toMMSS();
+		elCurr.innerHTML=Math.floor(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000).toSS();
 		// TODO: check curr interval if interval < track.duration_ms - startAt -> restart track
 	    //60-45 - left > 0
 	    songRemaining = (isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000);
@@ -91,9 +106,9 @@ function handlePlay() {
 	console.log(currSong, playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
 	if (currSong < playlistTracks.length) {
 		Spotify.startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id]);
-		$("#artist").text(playlistTracks[currSong].artists[0].name);
-		$("#title").text(playlistTracks[currSong].name);
-		$("#artwork").attr("src", playlistTracks[currSong].album.images[0].url);
+		elArtist.innerHTML=playlistTracks[currSong].artists[0].name;
+		elTitle.innerHTML=playlistTracks[currSong].name;
+		elArtwork.src = playlistTracks[currSong].album.images[0].url;
 	}
 }
 
@@ -101,9 +116,10 @@ function getPlayLists(offset, limit) {
 	Spotify.getPlayLists(offset, limit).then((data) => {
 		console.log(data);
 		data.items.forEach((pl) => {
-			$('#playlists')					
-				.append($('<option>', { value : pl.href })	
-				.text(pl.name));
+			var opt = document.createElement('option');
+    		opt.value = pl.href;
+    		opt.innerHTML = pl.name;
+   			elPlaylists.appendChild(opt);
 		});
 		if (data.next) {
 			getPlayLists(data.offset + data.limit, data.limit);
@@ -115,7 +131,7 @@ function analyze() {
 	// reset any previous analysis (and current playlist tracks)
 	playlistTracks = [];
 	analysis = [];
-	getPlaylistTracks(0,100,$('#playlists').val(),null, function(data, next) {
+	getPlaylistTracks(0,100,elPlaylists.options[elPlaylists.selectedIndex].value,null, function(data, next) {
 		var ids = "";
 		outgoing += data.items.length;
 		for (var i = 0; i < data.items.length; i++) {
