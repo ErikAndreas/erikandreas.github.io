@@ -69,19 +69,19 @@ var Spotify = {
 		return fetch(Spotify.req(url))
 			.then(Spotify.handleErrors);
 	},
-	pauseSong: function() {
-		return fetch(Spotify.put("https://api.spotify.com/v1/me/player/pause"))
+	pauseSong: function(deviceId) {
+		return fetch(Spotify.put("https://api.spotify.com/v1/me/player/pause?device_id="+deviceId))
 		.then(Spotify.handleErrors)
 		.then((data) => {
 			Spotify.isPlaying = false;
 	  		console.log("paused"); 			
 		});
 	},
-	startSong: function(id, startPos) {
-		return fetch(Spotify.putBody("https://api.spotify.com/v1/me/player/play",JSON.stringify({"uris":["spotify:track:"+id]})))
+	startSong: function(id, startPos, deviceId) {
+		return fetch(Spotify.putBody("https://api.spotify.com/v1/me/player/play?device_id="+deviceId, JSON.stringify({"uris":["spotify:track:"+id]})))
 			.then(Spotify.handleErrors)
 			.then((data) => {			
-				fetch(Spotify.put("https://api.spotify.com/v1/me/player/seek?position_ms="+Math.round(startPos * 1000)))
+				fetch(Spotify.put("https://api.spotify.com/v1/me/player/seek?device_id="+deviceId+"&position_ms="+Math.round(startPos * 1000)))
 	    			.then(Spotify.handleErrors)
 					.then((data) => {
 						Spotify.isPlaying = true;

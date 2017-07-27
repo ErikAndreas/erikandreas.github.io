@@ -1,33 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Remote</title>
-<style>
-    body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-    }
-</style>
+	<title>Remote</title>
+	<style>
+	    body {
+	        width: 35em;
+	        margin: 0 auto;
+	        font-family: Tahoma, Verdana, Arial, sans-serif;
+	    }
+	</style>
 </head>
 <body>
-playlists
-<select id="playlists">
-</select>
-<a onclick="analyze()">Analyze</a>
+	<div id="devC">
+		Your devices:
+		<select id="devices">
+		</select>
+	</div>
+	<div id="plC">
+		Playlists:
+		<select id="playlists">
+		</select>
+	</div>
+	<div id="settingsC">
+	<input type="checkbox" id="isRand"> Randomize playlists
+	</div>
 
-<a onclick="start()">Start</a>
-<div id="tot"></div>
-<div id="curr"></div>
-<div id="artist"></div>
-<div id="title"></div>
-<img id="artwork"></div>
-  <script type="text/javascript" src="timer.js"></script>
-  <script type="text/javascript" src="spotify.js"></script>
-  <script type="text/javascript" src="app.js"></script>
-<script>
-App.init();
-</script>
+	<button onclick="analyze()">Analyze</button>
+
+	<button onclick="start()" id="btnStart" disabled="true">Start</button>
+	<div id="tot"></div>
+	<div id="curr"></div>
+	<div id="artist"></div>
+	<div id="title"></div>
+	<img id="artwork"></div>
+
+	<script type="text/javascript" src="timer.js"></script>
+	<script type="text/javascript" src="spotify.js"></script>
+	<script type="text/javascript" src="app.js"></script>
+	<script>
+	App.init();
+	</script>
 
 </body>
 </html>
