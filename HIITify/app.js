@@ -1,5 +1,6 @@
 "use strict"
-var elPlaylists = document.getElementById("playlists");
+var elPlaylists = document.getElementById("playlistsHigh");
+var elPlaylistsLow = document.getElementById("playlistsLow");
 var elDevices = document.getElementById("devices");
 var elIsRand = document.getElementById("isRand");
 var App = {
@@ -28,6 +29,7 @@ var App = {
 				console.log(data);
 			});		
 			rmOptions(elPlaylists);
+			rmOptions(elPlaylistsLow);
 			getPlayLists(0, 50);
 		}
 	}
@@ -48,7 +50,7 @@ var elTitle = document.getElementById("title");
 var elArtwork = document.getElementById("artwork");
 var elBtnStart = document.getElementById("btnStart");
 
-var totTime = 1*60;
+var totTime = 5*60;
 var loTime = 15;
 var hiTime = 10;
 var isHigh = false;
@@ -67,34 +69,58 @@ var totTimer = new Timer({
 		elCurr.innerHTML=Math.floor(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000).toSS();
 		// TODO: check curr interval if interval < track.duration_ms - startAt -> restart track
 	    //60-45 - left > 0
-	    songRemaining = (isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000);
+	    //songRemaining = (isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000);
+		if (isHigh) {
+			songRemaining = (hiTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(hiTimer.getDuration()/1000);
+		} else {
+			songRemaining = (loTime)-(playlistTracksLow[currSongLow].duration_ms/1000)+parseFloat(analysis[playlistTracksLow[currSongLow].id])-(loTimer.getDuration()/1000);
+		}
 		//console.log((isHigh?hiTime:loTime),(playlistTracks[currSong].duration_ms/1000),parseFloat(analysis[playlistTracks[currSong].id]),(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
 		//console.log((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
 		
 		if (songRemaining > 0 && (Math.ceil(songRemaining + 0.750)==1)) {
 			console.log("RESTART");
-			console.log((isHigh?hiTime:loTime)-(playlistTracks[currSong].duration_ms/1000)+parseFloat(analysis[playlistTracks[currSong].id])-(isHigh?hiTimer.getDuration()/1000:loTimer.getDuration()/1000));
 			if (Spotify.isPlaying)
 				handlePlay();
 		} 		
 	}
 });
 var loTimer = new Timer({
-	onstart: function() {console.log('lo start');handlePlay();},
-	onend: function() {isHigh=true;++currSong;hiTimer.start(hiTime); console.log('lo end');}
+	onstart: function() {
+		console.log('lo start');
+		handlePlay();
+	},
+	onend: function() {
+		isHigh=true;
+		++currSongLow;
+		hiTimer.start(hiTime);
+		console.log('lo end');
+	}
 });
 var hiTimer = new Timer({
-	onstart: function() {console.log('hi start');handlePlay();},
-	onend: function() {isHigh=false;++currSong;loTimer.start(loTime);console.log('hi end');}
+	onstart: function() {
+		console.log('hi start');
+		handlePlay();
+	},
+	onend: function() {
+		isHigh=false;
+		++currSong;
+		loTimer.start(loTime);
+		console.log('hi end');
+	}
 });
 
 elPlaylists.onchange = playlistSelChanged;
+elPlaylistsLow.onchange = playlistSelChanged;
 
 var outgoing = 0;
 var playlistTracks = [];
+var playlistTracksLow = [];
 var orgPlayListTracks = [];
+var orgPlayListTracksLow = [];
 var analysis = [];
 var currSong = 0;
+var currSongLow = 0;
 
 function fixTotTime() {
 	var cycle = loTime + hiTime;
@@ -103,10 +129,13 @@ function fixTotTime() {
 
 function start() {
 	currSong = 0;
+	currSongLow = 0;
 	if (elIsRand.checked) {
 		playlistTracks.shuffle();
+		playlistTracksLow.shuffle();
 	} else { // might need a 'reset'
 		playlistTracks = orgPlayListTracks;
+		playlistTracksLow = orgPlayListTracksLow;
 	}
 	totTimer.start(fixTotTime(totTime));
 	loTimer.start(loTime);
@@ -114,12 +143,22 @@ function start() {
 
 function handlePlay() {
 	Spotify.isPlaying = false;
-	console.log(currSong, playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
-	if (currSong < playlistTracks.length) {
-		Spotify.startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id], elDevices.options[elDevices.selectedIndex].value);
-		elArtist.innerHTML=playlistTracks[currSong].artists[0].name;
-		elTitle.innerHTML=playlistTracks[currSong].name;
-		elArtwork.src = playlistTracks[currSong].album.images[0].url;
+	if (isHigh) {
+		console.log(currSong, playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
+		if (currSong < playlistTracks.length) {
+			Spotify.startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id], elDevices.options[elDevices.selectedIndex].value);
+			elArtist.innerHTML=playlistTracks[currSong].artists[0].name;
+			elTitle.innerHTML=playlistTracks[currSong].name;
+			elArtwork.src = playlistTracks[currSong].album.images[0].url;
+		}
+	} else {
+		console.log(currSongLow, playlistTracksLow[currSongLow], analysis[playlistTracksLow[currSongLow].id]);
+		if (currSongLow < playlistTracksLow.length) {
+			Spotify.startSong(playlistTracksLow[currSongLow].id, analysis[playlistTracksLow[currSongLow].id], elDevices.options[elDevices.selectedIndex].value);
+			elArtist.innerHTML=playlistTracksLow[currSongLow].artists[0].name;
+			elTitle.innerHTML=playlistTracksLow[currSongLow].name;
+			elArtwork.src = playlistTracksLow[currSongLow].album.images[0].url;
+		}
 	}
 }
 
@@ -130,7 +169,8 @@ function getPlayLists(offset, limit) {
 			var opt = document.createElement('option');
     		opt.value = pl.href;
     		opt.innerHTML = pl.name;
-   			elPlaylists.appendChild(opt);
+   			elPlaylistsLow.appendChild(opt);
+   			elPlaylists.appendChild(opt.cloneNode(true));   			
 		});
 		if (data.next) {
 			getPlayLists(data.offset + data.limit, data.limit);
@@ -141,7 +181,9 @@ function getPlayLists(offset, limit) {
 function analyze() {
 	// reset any previous analysis (and current playlist tracks)
 	playlistTracks = [];
+	playlistTracksLow = [];
 	analysis = [];
+	outgoing = 0;
 	getPlaylistTracks(0,100,elPlaylists.options[elPlaylists.selectedIndex].value,null, function(data, next) {
 		var ids = "";
 		outgoing += data.items.length;
@@ -158,10 +200,30 @@ function analyze() {
 		}
 		getAudioFeatures(ids);
 		if (!next) {
-			console.log('playlist tracks done ' + outgoing);
+			console.log('playlist high tracks done ' + outgoing);
 			orgPlayListTracks = JSON.parse(JSON.stringify(playlistTracks));
 		}
 	});
+	getPlaylistTracks(0,100,elPlaylistsLow.options[elPlaylistsLow.selectedIndex].value,null, function(data, next) {
+		var ids = "";
+		outgoing += data.items.length;
+		for (var i = 0; i < data.items.length; i++) {
+			if (data.items[i].track.is_playable) {
+				if (i > 0) ids += ",";
+				ids += data.items[i].track.id;
+				//console.log(data.items[i]);
+				playlistTracksLow.push(data.items[i].track);
+			} else {
+				console.log('track not available', data.items[i].track);
+				--outgoing;
+			}
+		}
+		getAudioFeatures(ids);
+		if (!next) {
+			console.log('playlist low tracks done ' + outgoing);
+			orgPlayListTracksLow = JSON.parse(JSON.stringify(playlistTracksLow));
+		}
+	});	
 }
 
 function getPlaylistTracks(offset,limit,playlist,href, cb) {
