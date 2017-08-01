@@ -5,7 +5,7 @@ var elDevices = document.getElementById("devices");
 var elIsRand = document.getElementById("isRand");
 var App = {
 	client_id: '9d4ecfc733cf415887763c509a274bc5',
-	init: function() {
+	init: async function() {
 		console.log('app');
 		if (!Spotify.token &&!location.hash) {
 			Spotify.client_id = App.client_id;
@@ -15,19 +15,15 @@ var App = {
 			//TODO: check state matches
 			Spotify.token = o.get('access_token');
 			console.log(Spotify.token);
-			Spotify.devices().then((data) => {
-				console.log(data);
-				data.devices.forEach((dev) => {
-					var opt = document.createElement('option');
-		    		opt.value = dev.id;
-		    		opt.innerHTML = dev.type + ' - ' + dev.name;
-		   			elDevices.appendChild(opt);
-				});
-
-			});
-			Spotify.me().then((data) => {				
-				console.log(data);
+			const deviceData = await Spotify.devices();
+			deviceData.devices.forEach((dev) => {
+				var opt = document.createElement('option');
+		    	opt.value = dev.id;
+		    	opt.innerHTML = dev.type + ' - ' + dev.name;
+		   		elDevices.appendChild(opt);
 			});		
+			const me = await Spotify.me();				
+			console.log(me);
 			rmOptions(elPlaylists);
 			rmOptions(elPlaylistsLow);
 			getPlayLists(0, 50);
@@ -162,118 +158,125 @@ function handlePlay() {
 	}
 }
 
-function getPlayLists(offset, limit) {	
-	Spotify.getPlayLists(offset, limit).then((data) => {
-		console.log(data);
-		data.items.forEach((pl) => {
-			var opt = document.createElement('option');
-    		opt.value = pl.href;
-    		opt.innerHTML = pl.name;
-   			elPlaylistsLow.appendChild(opt);
-   			elPlaylists.appendChild(opt.cloneNode(true));   			
-		});
-		if (data.next) {
-			getPlayLists(data.offset + data.limit, data.limit);
-		}
+async function getPlayLists(offset, limit) {	
+	const plData = await Spotify.getPlayLists(offset, limit);
+	//console.log(plData);
+	plData.items.forEach((pl) => {
+		var opt = document.createElement('option');
+		opt.value = pl.href;
+		opt.innerHTML = pl.name;
+		elPlaylistsLow.appendChild(opt);
+		elPlaylists.appendChild(opt.cloneNode(true));   			
 	});
+	if (plData.next) {
+		getPlayLists(plData.offset + plData.limit, plData.limit);
+	}
 }
 
-function analyze() {
+async function analyze() {
 	// reset any previous analysis (and current playlist tracks)
 	playlistTracks = [];
 	playlistTracksLow = [];
 	analysis = [];
 	outgoing = 0;
-	getPlaylistTracks(0,100,elPlaylists.options[elPlaylists.selectedIndex].value,null, function(data, next) {
-		var ids = "";
-		outgoing += data.items.length;
-		for (var i = 0; i < data.items.length; i++) {
-			if (data.items[i].track.is_playable) {
-				if (i > 0) ids += ",";
-				ids += data.items[i].track.id;
-				//console.log(data.items[i]);
-				playlistTracks.push(data.items[i].track);
-			} else {
-				console.log('track not available', data.items[i].track);
-				--outgoing;
-			}
-		}
-		getAudioFeatures(ids);
-		if (!next) {
-			console.log('playlist high tracks done ' + outgoing);
-			orgPlayListTracks = JSON.parse(JSON.stringify(playlistTracks));
-		}
-	});
-	getPlaylistTracks(0,100,elPlaylistsLow.options[elPlaylistsLow.selectedIndex].value,null, function(data, next) {
-		var ids = "";
-		outgoing += data.items.length;
-		for (var i = 0; i < data.items.length; i++) {
-			if (data.items[i].track.is_playable) {
-				if (i > 0) ids += ",";
-				ids += data.items[i].track.id;
-				//console.log(data.items[i]);
-				playlistTracksLow.push(data.items[i].track);
-			} else {
-				console.log('track not available', data.items[i].track);
-				--outgoing;
-			}
-		}
-		getAudioFeatures(ids);
-		if (!next) {
-			console.log('playlist low tracks done ' + outgoing);
-			orgPlayListTracksLow = JSON.parse(JSON.stringify(playlistTracksLow));
-		}
-	});	
+	getPlaylistTracks(0,100,elPlaylists.options[elPlaylists.selectedIndex].value,null);
+	getPlaylistTracksLow(0,100,elPlaylistsLow.options[elPlaylistsLow.selectedIndex].value,null);	
 }
 
-function getPlaylistTracks(offset,limit,playlist,href, cb) {
-	Spotify.getPlaylistTracks(offset,limit,playlist,href).then((data) => {
-		if (data && data.next) {
-			getPlaylistTracks(data.offset + data.limit, data.limit, null, data.next,cb);
-		} 
-		cb(data, data.next);
-	});
+async function getPlaylistTracks(offset,limit,playlist,href) {
+	const data = await Spotify.getPlaylistTracks(offset,limit,playlist,href);
+	var ids = "";
+	outgoing += data.items.length;
+	for (var i = 0; i < data.items.length; i++) {
+		if (data.items[i].track.is_playable) {
+			if (i > 0) ids += ",";
+			ids += data.items[i].track.id;
+			//console.log(data.items[i]);
+			playlistTracks.push(data.items[i].track);
+		} else {
+			console.log('track not available', data.items[i].track);
+			--outgoing;
+		}
+	}
+	getAudioFeatures(ids);
+	if (data && data.next) {
+		getPlaylistTracks(data.offset + data.limit, data.limit, null, data.next);
+	} else {
+		console.log('playlist high tracks done ' + outgoing);
+		orgPlayListTracks = JSON.parse(JSON.stringify(playlistTracks));
+	}	
+	/* return
+	 playlistTracks
+	 orgPlayListTracks
+	 outgoing
+	*/
 }
 
-function getAudioFeatures(ids) {
-	Spotify.getAudioFeatures(ids).then((data) => {
-		//console.log(data);
-		for (var i = 0; i < data.audio_features.length; i++) {
-			var lsid = localStorage.getItem(data.audio_features[i].id);
-			if (!lsid) {
-				Spotify.getAudioAnalysis(data.audio_features[i].analysis_url).then(function(response) {
-					Promise.all([Promise.resolve(response.url), response.json()]).then(function(o){
-						var url = o[0];
-						var data = o[1];
-						var loudness = data.track.loudness;
-						var eofi = data.track.end_of_fade_in;
-						var startAt = 0;
-						for (var i = 0; i < data.sections.length;i++) {
-							if (data.sections[i].duration >= 20 && data.sections[i].loudness > loudness) {
-								startAt = data.sections[i].start;
-								break;
-							}
-						}
-						startAt = Math.max(startAt, eofi);
-						var str = "/audio-analysis/"
-						var id = url.substring(url.lastIndexOf(str)+ str.length);
-						console.log(url, id, startAt);
-						localStorage.setItem(id, startAt);
-						analysis[id] = startAt;
-						--outgoing;
-						if (0 === outgoing) analysisDone();
-					});
-				}).catch(function(error) {
-					console.log(error);
-				});
-			} else {
-				analysis[data.audio_features[i].id] = lsid;
-				--outgoing;				
-				console.log("already got " + data.audio_features[i].id + " in cache", outgoing);
-				if (0 === outgoing) analysisDone();
+async function getPlaylistTracksLow(offset,limit,playlist,href) {
+	const data = await Spotify.getPlaylistTracks(offset,limit,playlist,href);
+	var ids = "";
+	outgoing += data.items.length;
+	for (var i = 0; i < data.items.length; i++) {
+		if (data.items[i].track.is_playable) {
+			if (i > 0) ids += ",";
+			ids += data.items[i].track.id;
+			//console.log(data.items[i]);
+			playlistTracksLow.push(data.items[i].track);
+		} else {
+			console.log('track not available', data.items[i].track);
+			--outgoing;
+		}
+	}
+	getAudioFeatures(ids);
+	if (data && data.next) {
+		getPlaylistTracksLow(data.offset + data.limit, data.limit, null, data.next);
+	} else {
+		console.log('playlist low tracks done ' + outgoing);
+		orgPlayListTracksLow = JSON.parse(JSON.stringify(playlistTracksLow));
+	}
+}
+
+async function getAudioFeatures(ids) {
+	const data = await Spotify.getAudioFeatures(ids);
+	console.log(data);
+	data.audio_features.forEach(async af => {
+		var lsid = localStorage.getItem(af.id);
+		if (!lsid) {
+			try {
+				const response = await Spotify.getAudioAnalysis(af.analysis_url);					
+				var url = response.url;
+				var analysisData = await response.json();
+				var loudness = analysisData.track.loudness;
+				var eofi = analysisData.track.end_of_fade_in;
+				var startAt = 0;
+				for (var i = 0; i < analysisData.sections.length;i++) {
+					if (analysisData.sections[i].duration >= 20 && analysisData.sections[i].loudness > loudness) {
+						startAt = analysisData.sections[i].start;
+						break;
+					}
+				}
+				startAt = Math.max(startAt, eofi);
+				// assumption: audio features analysis url has format /audio-analysis/spotifysongid
+				var str = "/audio-analysis/"
+				var id = url.substring(url.lastIndexOf(str)+ str.length);
+				console.log(url, id, startAt);
+				localStorage.setItem(id, startAt);
+				analysis[id] = startAt;
+				--outgoing;
+				if (0 === outgoing) analysisDone();					
+			} catch(error) {
+				console.log(error);
 			}
-		}	
+		} else {
+			analysis[af.id] = lsid;
+			--outgoing;				
+			console.log("already got " + af.id + " in cache", outgoing);
+			if (0 === outgoing) analysisDone();
+		}
 	});
+	/* return
+	analysis
+	*/
 }
 
 function analysisDone() {
