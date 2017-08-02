@@ -1,5 +1,5 @@
 "use strict"
-var Spotify = {
+const Spotify = {
 	client_id: '',
 	token: '',
 	userCountry: '',
