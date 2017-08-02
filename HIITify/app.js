@@ -1,9 +1,9 @@
 "use strict"
-var elPlaylists = document.getElementById("playlistsHigh");
-var elPlaylistsLow = document.getElementById("playlistsLow");
-var elDevices = document.getElementById("devices");
-var elIsRand = document.getElementById("isRand");
-var App = {
+const elPlaylists = document.getElementById("playlistsHigh");
+const elPlaylistsLow = document.getElementById("playlistsLow");
+const elDevices = document.getElementById("devices");
+const elIsRand = document.getElementById("isRand");
+const App = {
 	client_id: '9d4ecfc733cf415887763c509a274bc5',
 	init: async function() {
 		console.log('app');
@@ -11,13 +11,13 @@ var App = {
 			Spotify.client_id = App.client_id;
 			Spotify.login();
 		} else {
-			var o = new URLSearchParams(location.hash.substring(1));
+			const o = new URLSearchParams(location.hash.substring(1));
 			//TODO: check state matches
 			Spotify.token = o.get('access_token');
 			console.log(Spotify.token);
 			const deviceData = await Spotify.devices();
 			deviceData.devices.forEach((dev) => {
-				var opt = document.createElement('option');
+				const opt = document.createElement('option');
 		    	opt.value = dev.id;
 		    	opt.innerHTML = dev.type + ' - ' + dev.name;
 		   		elDevices.appendChild(opt);
@@ -39,19 +39,19 @@ select device + rescan
 hiitfy ui
 	
 */
-var elTot = document.getElementById("tot");
-var elCurr = document.getElementById("curr");
-var elArtist = document.getElementById("artist");
-var elTitle = document.getElementById("title");	
-var elArtwork = document.getElementById("artwork");
-var elBtnStart = document.getElementById("btnStart");
+const elTot = document.getElementById("tot");
+const elCurr = document.getElementById("curr");
+const elArtist = document.getElementById("artist");
+const elTitle = document.getElementById("title");	
+const elArtwork = document.getElementById("artwork");
+const elBtnStart = document.getElementById("btnStart");
 
-var totTime = 5*60;
-var loTime = 15;
-var hiTime = 10;
-var isHigh = false;
-var songRemaining = -1;
-var totTimer = new Timer({
+const totTime = 5*60;
+const loTime = 15;
+const hiTime = 10;
+let isHigh = false;
+let songRemaining = -1;
+const totTimer = new Timer({
 	tick: 250,
 	onend: function() {
 		loTimer.stop();
@@ -81,7 +81,7 @@ var totTimer = new Timer({
 		} 		
 	}
 });
-var loTimer = new Timer({
+const loTimer = new Timer({
 	onstart: function() {
 		console.log('lo start');
 		handlePlay();
@@ -93,7 +93,7 @@ var loTimer = new Timer({
 		console.log('lo end');
 	}
 });
-var hiTimer = new Timer({
+const hiTimer = new Timer({
 	onstart: function() {
 		console.log('hi start');
 		handlePlay();
@@ -109,17 +109,17 @@ var hiTimer = new Timer({
 elPlaylists.onchange = playlistSelChanged;
 elPlaylistsLow.onchange = playlistSelChanged;
 
-var outgoing = 0;
-var playlistTracks = [];
-var playlistTracksLow = [];
-var orgPlayListTracks = [];
-var orgPlayListTracksLow = [];
-var analysis = [];
-var currSong = 0;
-var currSongLow = 0;
+let outgoing = 0;
+let playlistTracks = [];
+let playlistTracksLow = [];
+let orgPlayListTracks = [];
+let orgPlayListTracksLow = [];
+let analysis = [];
+let currSong = 0;
+let currSongLow = 0;
 
 function fixTotTime() {
-	var cycle = loTime + hiTime;
+	const cycle = loTime + hiTime;
 	return Math.ceil(totTime / cycle)*cycle; 
 }
 
@@ -162,7 +162,7 @@ async function getPlayLists(offset, limit) {
 	const plData = await Spotify.getPlayLists(offset, limit);
 	//console.log(plData);
 	plData.items.forEach((pl) => {
-		var opt = document.createElement('option');
+		const opt = document.createElement('option');
 		opt.value = pl.href;
 		opt.innerHTML = pl.name;
 		elPlaylistsLow.appendChild(opt);
@@ -185,9 +185,9 @@ async function analyze() {
 
 async function getPlaylistTracks(offset,limit,playlist,href) {
 	const data = await Spotify.getPlaylistTracks(offset,limit,playlist,href);
-	var ids = "";
+	let ids = "";
 	outgoing += data.items.length;
-	for (var i = 0; i < data.items.length; i++) {
+	for (let i = 0; i < data.items.length; i++) {
 		if (data.items[i].track.is_playable) {
 			if (i > 0) ids += ",";
 			ids += data.items[i].track.id;
@@ -214,9 +214,9 @@ async function getPlaylistTracks(offset,limit,playlist,href) {
 
 async function getPlaylistTracksLow(offset,limit,playlist,href) {
 	const data = await Spotify.getPlaylistTracks(offset,limit,playlist,href);
-	var ids = "";
+	let ids = "";
 	outgoing += data.items.length;
-	for (var i = 0; i < data.items.length; i++) {
+	for (let i = 0; i < data.items.length; i++) {
 		if (data.items[i].track.is_playable) {
 			if (i > 0) ids += ",";
 			ids += data.items[i].track.id;
@@ -244,12 +244,12 @@ async function getAudioFeatures(ids) {
 		if (!lsid) {
 			try {
 				const response = await Spotify.getAudioAnalysis(af.analysis_url);					
-				var url = response.url;
-				var analysisData = await response.json();
-				var loudness = analysisData.track.loudness;
-				var eofi = analysisData.track.end_of_fade_in;
-				var startAt = 0;
-				for (var i = 0; i < analysisData.sections.length;i++) {
+				const url = response.url;
+				const analysisData = await response.json();
+				const loudness = analysisData.track.loudness;
+				const eofi = analysisData.track.end_of_fade_in;
+				let startAt = 0;
+				for (let i = 0; i < analysisData.sections.length;i++) {
 					if (analysisData.sections[i].duration >= 20 && analysisData.sections[i].loudness > loudness) {
 						startAt = analysisData.sections[i].start;
 						break;
@@ -257,8 +257,8 @@ async function getAudioFeatures(ids) {
 				}
 				startAt = Math.max(startAt, eofi);
 				// assumption: audio features analysis url has format /audio-analysis/spotifysongid
-				var str = "/audio-analysis/"
-				var id = url.substring(url.lastIndexOf(str)+ str.length);
+				const str = "/audio-analysis/"
+				const id = url.substring(url.lastIndexOf(str)+ str.length);
 				console.log(url, id, startAt);
 				localStorage.setItem(id, startAt);
 				analysis[id] = startAt;
@@ -298,9 +298,9 @@ function rmOptions(el) {
 }
 
 Number.prototype.toMMSS = function () {
-    var sec_num = parseInt(this, 10); // don't forget the second param
-    var minutes = Math.floor(sec_num / 60);
-    var seconds = sec_num - (minutes * 60);
+    const sec_num = parseInt(this, 10); // don't forget the second param
+    let minutes = Math.floor(sec_num / 60);
+    let seconds = sec_num - (minutes * 60);
 
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
@@ -308,15 +308,15 @@ Number.prototype.toMMSS = function () {
 }
 
 Number.prototype.toSS = function () {
-    var sec_num = parseInt(this, 10); // don't forget the second param
-    var seconds = sec_num;
+    const sec_num = parseInt(this, 10); // don't forget the second param
+    let seconds = sec_num;
     if (seconds < 10) {seconds = "0"+seconds;}
     return seconds;
 }
 
 // Array shuffling prototype
 Array.prototype.shuffle = function(){
-    var counter = this.length, temp, index;
+    let counter = this.length, temp, index;
 
     // While there are elements in the array
     while (counter > 0) {
