@@ -1,7 +1,6 @@
 "use strict"
 const elPlaylists = document.getElementById("playlistsHigh");
 const elPlaylistsLow = document.getElementById("playlistsLow");
-const elDevices = document.getElementById("devices");
 const elIsRand = document.getElementById("isRand");
 const App = {
 	client_id: '9d4ecfc733cf415887763c509a274bc5',
@@ -16,21 +15,69 @@ const App = {
 			Spotify.token = o.get('access_token');
 			console.log(Spotify.token);
 			const deviceData = await Spotify.devices();
+			deviceList.devices = [];
 			deviceData.devices.forEach((dev) => {
-				const opt = document.createElement('option');
-		    	opt.value = dev.id;
-		    	opt.innerHTML = dev.type + ' - ' + dev.name;
-		   		elDevices.appendChild(opt);
+		   		deviceList.devices.push({text: dev.type + ' - ' + dev.name, value: dev.id});
 			});		
+			deviceList.selected = deviceList.devices[0].value;
 			const me = await Spotify.me();				
 			console.log(me);
-			rmOptions(elPlaylists);
-			rmOptions(elPlaylistsLow);
+			//rmOptions(elPlaylists);
+			//rmOptions(elPlaylistsLow);
 			getPlayLists(0, 50);
 		}
 	}
 };
-
+const EventBus = new Vue({
+	data: {
+		event: {
+			PLAYLIST_CHANGED: 'playlist-changed'
+		}
+	}
+})
+const deviceList = new Vue({
+	el: '#devC',
+	data: {
+		selected:'',
+		devices:[] // list item: {text:text, value:value}
+	}
+});
+const playlistsHigh = new Vue({
+	el: '#plch',
+	data: {
+		selected:'',
+		playlists:[]
+	},
+	methods: {
+		playlistSelChanged() {
+			EventBus.$emit(EventBus.event.PLAYLIST_CHANGED,'high');
+		}
+	}
+});
+const playlistsLow = new Vue({
+	el: '#plcl',
+	data: {
+		selected:'',
+		playlists:[]
+	},
+	methods: {
+		playlistSelChanged() {
+			EventBus.$emit(EventBus.event.PLAYLIST_CHANGED,'low');			
+		}
+	}
+});
+const startButton = new Vue({
+	el: '#sbc',
+	data: {
+		isDisabled: false
+	},
+	created: function() {
+		EventBus.$on(EventBus.event.PLAYLIST_CHANGED, (payload) => {
+			console.log('event',payload)
+			this.isDisabled = true;
+		});
+	}
+});
 /* UI
 /
 about + connect
@@ -56,7 +103,7 @@ const totTimer = new Timer({
 	onend: function() {
 		loTimer.stop();
 		hiTimer.stop();
-		Spotify.pauseSong(elDevices.options[elDevices.selectedIndex].value);
+		Spotify.pauseSong(deviceList.selected);
 		console.log('tot end');
 	},
 	ontick: function() {
@@ -106,8 +153,8 @@ const hiTimer = new Timer({
 	}
 });
 
-elPlaylists.onchange = playlistSelChanged;
-elPlaylistsLow.onchange = playlistSelChanged;
+//elPlaylists.onchange = playlistSelChanged;
+//elPlaylistsLow.onchange = playlistSelChanged;
 
 let outgoing = 0;
 let playlistTracks = [];
@@ -142,7 +189,7 @@ function handlePlay() {
 	if (isHigh) {
 		console.log(currSong, playlistTracks[currSong], analysis[playlistTracks[currSong].id]);
 		if (currSong < playlistTracks.length) {
-			Spotify.startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id], elDevices.options[elDevices.selectedIndex].value);
+			Spotify.startSong(playlistTracks[currSong].id, analysis[playlistTracks[currSong].id], deviceList.selected);
 			elArtist.innerHTML=playlistTracks[currSong].artists[0].name;
 			elTitle.innerHTML=playlistTracks[currSong].name;
 			elArtwork.src = playlistTracks[currSong].album.images[0].url;
@@ -150,7 +197,7 @@ function handlePlay() {
 	} else {
 		console.log(currSongLow, playlistTracksLow[currSongLow], analysis[playlistTracksLow[currSongLow].id]);
 		if (currSongLow < playlistTracksLow.length) {
-			Spotify.startSong(playlistTracksLow[currSongLow].id, analysis[playlistTracksLow[currSongLow].id], elDevices.options[elDevices.selectedIndex].value);
+			Spotify.startSong(playlistTracksLow[currSongLow].id, analysis[playlistTracksLow[currSongLow].id], deviceList.selected);
 			elArtist.innerHTML=playlistTracksLow[currSongLow].artists[0].name;
 			elTitle.innerHTML=playlistTracksLow[currSongLow].name;
 			elArtwork.src = playlistTracksLow[currSongLow].album.images[0].url;
@@ -162,14 +209,14 @@ async function getPlayLists(offset, limit) {
 	const plData = await Spotify.getPlayLists(offset, limit);
 	//console.log(plData);
 	plData.items.forEach((pl) => {
-		const opt = document.createElement('option');
-		opt.value = pl.href;
-		opt.innerHTML = pl.name;
-		elPlaylistsLow.appendChild(opt);
-		elPlaylists.appendChild(opt.cloneNode(true));   			
+		playlistsHigh.playlists.push({text:pl.name, value:pl.href});
+		playlistsLow.playlists.push({text:pl.name, value:pl.href});  			
 	});
 	if (plData.next) {
 		getPlayLists(plData.offset + plData.limit, plData.limit);
+	} else {
+		playlistsHigh.selected = playlistsHigh.playlists[0].value;
+		playlistsLow.selected = playlistsLow.playlists[0].value;
 	}
 }
 
@@ -179,8 +226,8 @@ async function analyze() {
 	playlistTracksLow = [];
 	analysis = [];
 	outgoing = 0;
-	getPlaylistTracks(0,100,elPlaylists.options[elPlaylists.selectedIndex].value,null);
-	getPlaylistTracksLow(0,100,elPlaylistsLow.options[elPlaylistsLow.selectedIndex].value,null);
+	getPlaylistTracks(0,100,playlistsHigh.selected,null);
+	getPlaylistTracksLow(0,100,playlistsLow.selected,null);
 	// TODO: check fixTotTime + num of song avail per playlist for enough no songs
 }
 
@@ -282,7 +329,7 @@ async function getAudioFeatures(ids) {
 
 function analysisDone() {
 	console.log('analysis done');
-	elBtnStart.disabled = false;
+	startButton.isDisabled = false;
 }
 
 function playlistSelChanged() {

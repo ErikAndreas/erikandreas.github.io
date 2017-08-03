@@ -13,15 +13,18 @@
 <body>
 	<div id="devC">
 		<h2>Your devices</h2>
-		<select id="devices">
+		<select v-model="selected">			
+			<option v-for="device in devices" v-bind:value="device.value">{{device.text}}</option>
 		</select>
 	</div>
 	<div id="plC">
 		<h2>Playlists</h2>
-		High: <select id="playlistsHigh">
-		</select><br/>
-		Low: <select id="playlistsLow">
-		</select>
+		<div id="plch">High: <select v-model="selected" v-on:change="playlistSelChanged">			
+			<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
+		</select></div>
+		<div id="plcl">Low: <select v-model="selected" v-on:change="playlistSelChanged">			
+			<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
+		</select></div>
 	</div>
 	<div id="settingsC">
 	<input type="checkbox" id="isRand"> Randomize playlists
@@ -29,7 +32,7 @@
 
 	<button onclick="analyze()">Analyze</button>
 
-	<button onclick="start()" id="btnStart" disabled="true">Start</button>
+	<span id="sbc"><button v-bind:disabled="isDisabled" onclick="start()">Start</button></span>
 	<div id="tot"></div>
 	<div id="curr"></div>
 	<div id="at">
@@ -37,6 +40,7 @@
 	</div>
 	<img id="artwork"></div>
 
+	<script type="text/javascript" src="https://unpkg.com/vue"></script>
 	<script type="text/javascript" src="timer.js"></script>
 	<script type="text/javascript" src="spotify.js"></script>
 	<script type="text/javascript" src="app.js"></script>
