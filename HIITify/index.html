@@ -17,6 +17,12 @@
 			<option v-for="device in devices" v-bind:value="device.value">{{device.text}}</option>
 		</select>
 	</div>
+	<div id="wC">
+		<h2>Workout</h2>
+		<input type="number" v-model="tot"/> Total workout (minutes)<br/>
+		<input type="number" v-model="high"/> High intervall (secs)<br/>
+		<input type="number" v-model="low"/> Low intervall (secs)<br/>
+	</div>
 	<div id="plC">
 		<h2>Playlists</h2>
 		<div id="plch">High: <select v-model="selected" v-on:change="playlistSelChanged">			
@@ -27,22 +33,25 @@
 		</select></div>
 	</div>
 	<div id="settingsC">
-	<input type="checkbox" id="isRand"> Randomize playlists
+		<input type="checkbox" v-bind:checked="shouldRandomize"> Randomize playlists<br/>
+		<input type="checkbox" v-bind:checked="shouldStartLow"> Start low<br/>
 	</div>
 
-	<button onclick="analyze()">Analyze</button>
+	<span id="abc"><button @click="analyze()">Analyze</button></span>
 
-	<span id="sbc"><button v-bind:disabled="isDisabled" onclick="start()">Start</button></span>
-	<div id="tot"></div>
-	<div id="curr"></div>
-	<div id="at">
-		<span id="artist"></span> - <span id="title"></span>
+	<span id="sbc"><button v-bind:disabled="isDisabled" @click="start()">Start</button></span>
+	<div id="playInfo">
+		<div id="tot">{{tot}}</div>
+		<div id="curr">{{curr}}</div>
+		<div id="artistTitle">{{artistTitle}}</div>
+		<img id="artwork" v-bind:src="artwork"></div>
 	</div>
-	<img id="artwork"></div>
-
 	<script type="text/javascript" src="https://unpkg.com/vue"></script>
 	<script type="text/javascript" src="timer.js"></script>
 	<script type="text/javascript" src="spotify.js"></script>
+	<script type="text/javascript" src="utils.js"></script>
+	<script type="text/javascript" src="analyzer.js"></script>
+	<script type="text/javascript" src="player.js"></script>
 	<script type="text/javascript" src="app.js"></script>
 	<script>
 	App.init();
