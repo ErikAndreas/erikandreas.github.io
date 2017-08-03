@@ -18,8 +18,8 @@ const Player = {
 		Player.totTimer = new Timer({
 			tick: 250,
 			onend: function() {
-				loTimer.stop();
-				hiTimer.stop();
+				Player.loTimer.stop();
+				Player.hiTimer.stop();
 				Spotify.pauseSong(deviceList.selected);
 				console.log('tot end');
 			},
