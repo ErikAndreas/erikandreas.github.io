@@ -132,7 +132,7 @@ const workoutSettings = new Vue({
 		low:10
 	},
 	computed: {
-		cycle: function() { return this.high + this.low;},
+		cycle: function() { return parseInt(this.high,10) + parseInt(this.low,10);},
 		totSecs:function() { return Math.ceil(this.tot * 60 / this.cycle)*this.cycle;}
 	}
 });

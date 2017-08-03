@@ -37,7 +37,7 @@ const Analyzer = {
 		if (data && data.next) {
 			Analyzer._getPlaylistTracks(data.offset + data.limit, data.limit, null, data.next, playlistTracks);
 		} else {
-			console.log('playlist tracks done ' + outgoing, playlistTracks);
+			console.log('playlist tracks done ' + Analyzer.outgoing, playlistTracks);
 		}
 	},
 	_getAudioFeatures: async (ids) => {
