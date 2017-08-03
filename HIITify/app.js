@@ -180,7 +180,8 @@ async function analyze() {
 	analysis = [];
 	outgoing = 0;
 	getPlaylistTracks(0,100,elPlaylists.options[elPlaylists.selectedIndex].value,null);
-	getPlaylistTracksLow(0,100,elPlaylistsLow.options[elPlaylistsLow.selectedIndex].value,null);	
+	getPlaylistTracksLow(0,100,elPlaylistsLow.options[elPlaylistsLow.selectedIndex].value,null);
+	// TODO: check fixTotTime + num of song avail per playlist for enough no songs
 }
 
 async function getPlaylistTracks(offset,limit,playlist,href) {
