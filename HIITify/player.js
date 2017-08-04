@@ -18,9 +18,7 @@ const Player = {
 		Player.totTimer = new Timer({
 			tick: 250,
 			onend: function() {
-				Player.loTimer.stop();
-				Player.hiTimer.stop();
-				Spotify.pauseSong(deviceList.selected);
+				Player.handleStop();
 				console.log('tot end');
 			},
 			ontick: function() {
@@ -84,6 +82,7 @@ const Player = {
 		console.log('totsecs',workoutSettings.totSecs);
 		Player.totTimer.start(workoutSettings.totSecs);
 		Player.loTimer.start(workoutSettings.low);
+		Player.eb.$emit(EventBus.event.PLAYER_STARTED, 'PLAYER_STARTED');
 	},
 	handlePlay: () => {
 		Spotify.isPlaying = false;
@@ -102,5 +101,12 @@ const Player = {
 				playInfo.artwork = Player.playlistTracksLow[Player.currSongLow].album.images[0].url;
 			}
 		}
+	},
+	handleStop: () => {
+		Player.loTimer.stop();
+		Player.hiTimer.stop();
+		Player.totTimer.stop();
+		Spotify.pauseSong(deviceList.selected);
+		Player.eb.$emit(EventBus.event.PLAYER_STOPPED, 'PLAYER_STOPPED');
 	}
 }

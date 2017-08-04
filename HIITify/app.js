@@ -3,10 +3,12 @@ const App = {
 	client_id: '9d4ecfc733cf415887763c509a274bc5',
 	init: async function() {
 		console.log('app');
+		View.current = View.views.INIT;
 		if (!Spotify.token &&!location.hash) {
 			Spotify.client_id = App.client_id;
 			Spotify.login();
 		} else {
+			View.current = View.views.SETTINGS;
 			const o = new URLSearchParams(location.hash.substring(1));
 			//TODO: check state matches
 			Spotify.token = o.get('access_token');
@@ -39,11 +41,25 @@ const App = {
 		}
 	}
 };
+const View = new Vue({
+// gotcha, cant nest vue instances, root might be instance, childs must be components	el: '#viewRoot',
+	data: {
+		views: {INIT: 'init',SETTINGS: 'settings', WORKOUT: 'workout'},
+		current: ''
+	},
+	methods: {
+		login() {
+			Spotify.login();
+		}
+	}
+});
 const EventBus = new Vue({
 	data: {
 		event: {
 			PLAYLIST_CHANGED: 'playlist-changed',
-			ANALYSIS_DONE: 'analysis-done'
+			ANALYSIS_DONE: 'analysis-done',
+			PLAYER_STARTED: 'player-started',
+			PLAYER_STOPPED: 'player-stopped'
 		}
 	}
 });
@@ -95,6 +111,7 @@ const startButton = new Vue({
 	},
 	methods: {
 		start() {
+			View.current = View.views.WORKOUT;
 			Player.start();
 		}
 	}
@@ -121,7 +138,23 @@ const playInfo = new Vue({
 		curr:'',
 		tot:'',
 		artistTitle:'',
-		artwork:''
+		artwork:'',
+		isPlaying: false
+	},
+	created: function() {
+		EventBus.$on(EventBus.event.PLAYER_STARTED, (payload) => {
+			console.log('event',payload)
+			this.isPlaying = true;
+		});
+		EventBus.$on(EventBus.event.PLAYER_STOPPED, (payload) => {
+			console.log('event',payload)
+			this.isPlaying = false;
+		});
+	},
+	methods: {
+		stop() {
+			Player.handleStop();
+		}
 	}
 });
 const workoutSettings = new Vue({

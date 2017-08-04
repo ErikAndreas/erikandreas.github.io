@@ -8,44 +8,56 @@
 	        margin: 0 auto;
 	        font-family: Tahoma, Verdana, Arial, sans-serif;
 	    }
+	    input[type="number"] {width: 3em;}
 	</style>
 </head>
 <body>
-	<div id="devC">
-		<h2>Your devices</h2>
-		<select v-model="selected">			
-			<option v-for="device in devices" v-bind:value="device.value">{{device.text}}</option>
-		</select>
+<div id="viewRoot">
+	<div id="init" v-show="current == views.INIT">
+		<h2>HIITify</h2>
+		<a @click="login">Spotify login</a>
 	</div>
-	<div id="wC">
-		<h2>Workout</h2>
-		<input type="number" v-model="tot"/> Total workout (minutes)<br/>
-		<input type="number" v-model="high"/> High intervall (secs)<br/>
-		<input type="number" v-model="low"/> Low intervall (secs)<br/>
-	</div>
-	<div id="plC">
-		<h2>Playlists</h2>
-		<div id="plch">High: <select v-model="selected" v-on:change="playlistSelChanged">			
-			<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
-		</select></div>
-		<div id="plcl">Low: <select v-model="selected" v-on:change="playlistSelChanged">			
-			<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
-		</select></div>
-	</div>
-	<div id="settingsC">
-		<input type="checkbox" v-bind:checked="shouldRandomize"> Randomize playlists<br/>
-		<input type="checkbox" v-bind:checked="shouldStartLow"> Start low<br/>
-	</div>
+	<div id="settings">
+		<div id="devC">
+			<h2>Your devices</h2>
+			<select v-model="selected">			
+				<option v-for="device in devices" v-bind:value="device.value">{{device.text}}</option>
+			</select>
+		</div>
+		<div id="wC">
+			<h2>Workout</h2>
+			<input type="number" min="1" v-model="tot"/> Total workout (minutes)<br/>
+			<input type="number" min="1" v-model="high"/> High intervall (secs)<br/>
+			<input type="number" min="1" v-model="low"/> Low intervall (secs)<br/>
+		</div>
+		<div id="plC">
+			<h2>Playlists</h2>
+			<div id="plch">High: <select v-model="selected" v-on:change="playlistSelChanged">			
+				<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
+			</select></div>
+			<div id="plcl">Low: <select v-model="selected" v-on:change="playlistSelChanged">			
+				<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
+			</select></div>
+		</div>
+		<div id="settingsC">
+			<input type="checkbox" v-bind:checked="shouldRandomize"> Randomize playlists<br/>
+			<input type="checkbox" v-bind:checked="shouldStartLow"> Start low<br/>
+		</div>
 
-	<span id="abc"><button @click="analyze()">Analyze</button></span>
+		<span id="abc"><button @click="analyze()">Analyze</button></span>
 
-	<span id="sbc"><button v-bind:disabled="isDisabled" @click="start()">Start</button></span>
-	<div id="playInfo">
-		<div id="tot">{{tot}}</div>
-		<div id="curr">{{curr}}</div>
-		<div id="artistTitle">{{artistTitle}}</div>
-		<img id="artwork" v-bind:src="artwork"></div>
+		<span id="sbc"><button v-bind:disabled="isDisabled" @click="start()">Start</button></span>
 	</div>
+	<div id="workout">
+		<div id="playInfo">
+			<div><a v-show="isPlaying" @click="stop">Quit</a></div>
+			<div id="tot">{{tot}}</div>
+			<div id="curr">{{curr}}</div>
+			<div id="artistTitle">{{artistTitle}}</div>
+			<img id="artwork" v-bind:src="artwork"></div>
+		</div>
+	</div>
+</div>
 	<script type="text/javascript" src="https://unpkg.com/vue"></script>
 	<script type="text/javascript" src="timer.js"></script>
 	<script type="text/javascript" src="spotify.js"></script>
