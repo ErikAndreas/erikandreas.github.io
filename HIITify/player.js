@@ -22,12 +22,16 @@ const Player = {
 				console.log('tot end');
 			},
 			ontick: function() {
-				playInfo.tot=Math.floor(Player.totTimer.getDuration()/1000).toMMSS();
-				playInfo.curr=Math.floor(Player.isHigh?Player.hiTimer.getDuration()/1000:Player.loTimer.getDuration()/1000).toSS();
+				//playInfo.tot=Math.floor(Player.totTimer.getDuration()/1000).toMMSS();
+				//playInfo.curr=Math.floor(Player.isHigh?Player.hiTimer.getDuration()/1000:Player.loTimer.getDuration()/1000).toSS();
+				Player.eb.$emit(EventBus.event.PLAYER_TICK, {
+					totRemaining: Math.floor(Player.totTimer.getDuration()/1000),
+					intervalRemaining: Math.floor(Player.isHigh?Player.hiTimer.getDuration()/1000:Player.loTimer.getDuration()/1000)
+				});
 				if (Player.isHigh) {
-					Player.songRemaining = (workoutSettings.high)-(Player.playlistTracks[Player.currSong].duration_ms/1000)+parseFloat(Player.analysis[Player.playlistTracks[Player.currSong].id])-(Player.hiTimer.getDuration()/1000);
+					Player.songRemaining = (Store.state.workout.high)-(Player.playlistTracks[Player.currSong].duration_ms/1000)+parseFloat(Player.analysis[Player.playlistTracks[Player.currSong].id])-(Player.hiTimer.getDuration()/1000);
 				} else {
-					Player.songRemaining = (workoutSettings.low)-(Player.playlistTracksLow[Player.currSongLow].duration_ms/1000)+parseFloat(Player.analysis[Player.playlistTracksLow[Player.currSongLow].id])-(Player.loTimer.getDuration()/1000);
+					Player.songRemaining = (Store.state.workout.low)-(Player.playlistTracksLow[Player.currSongLow].duration_ms/1000)+parseFloat(Player.analysis[Player.playlistTracksLow[Player.currSongLow].id])-(Player.loTimer.getDuration()/1000);
 				}
 				if (Player.songRemaining > 0 && (Math.ceil(Player.songRemaining + 0.750)==1)) {
 					console.log("RESTART");
@@ -44,7 +48,7 @@ const Player = {
 			onend: function() {
 				Player.isHigh=true;
 				Player.currSongLow++;
-				Player.hiTimer.start(workoutSettings.high);
+				Player.hiTimer.start(Store.state.workout.high);
 				console.log('lo end');
 			}
 		});
@@ -56,7 +60,7 @@ const Player = {
 			onend: function() {
 				Player.isHigh=false;
 				Player.currSong++;
-				Player.loTimer.start(workoutSettings.low);
+				Player.loTimer.start(Store.state.workout.low);
 				console.log('hi end');
 			}
 		});
@@ -72,16 +76,19 @@ const Player = {
 	start: () => {
 		Player.currSong = 0;
 		Player.currSongLow = 0;
-		if (playlistSettings.shouldRandomize) {
+		if (Store.state.playlist.shouldRandomize) {
 			Player.playlistTracks.shuffle();
 			Player.playlistTracksLow.shuffle();
 		} else { // might need a 'reset'
 			Player.playlistTracks = Player.orgPlayListTracks;
 			Player.playlistTracksLow = Player.orgPlayListTracksLow;
 		}
-		console.log('totsecs',workoutSettings.totSecs);
-		Player.totTimer.start(workoutSettings.totSecs);
-		Player.loTimer.start(workoutSettings.low);
+		const cycle = parseInt(Store.state.workout.high,10) + parseInt(Store.state.workout.low,10);
+		const totSecs = Math.ceil(Store.state.workout.tot * 60 / cycle) * cycle;
+		console.log('totsecs',totSecs);
+		Player.totTimer.start(totSecs);
+		// TODO: toggle start high|low
+		Player.loTimer.start(Store.state.workout.low);
 		Player.eb.$emit(EventBus.event.PLAYER_STARTED, 'PLAYER_STARTED');
 	},
 	handlePlay: () => {
@@ -89,16 +96,26 @@ const Player = {
 		if (Player.isHigh) {
 			console.log(Player.currSong, Player.playlistTracks[Player.currSong], Player.analysis[Player.playlistTracks[Player.currSong].id]);
 			if (Player.currSong < Player.playlistTracks.length) {
-				Spotify.startSong(Player.playlistTracks[Player.currSong].id, Player.analysis[Player.playlistTracks[Player.currSong].id], deviceList.selected);
-				playInfo.artistTitle=Player.playlistTracks[Player.currSong].artists[0].name + '-' + Player.playlistTracks[Player.currSong].name;
-				playInfo.artwork = Player.playlistTracks[Player.currSong].album.images[0].url;
+				Spotify.startSong(Player.playlistTracks[Player.currSong].id, Player.analysis[Player.playlistTracks[Player.currSong].id], Store.state.selectedDevice);
+				//playInfo.artistTitle=Player.playlistTracks[Player.currSong].artists[0].name + '-' + Player.playlistTracks[Player.currSong].name;
+				//playInfo.artwork = Player.playlistTracks[Player.currSong].album.images[0].url;
+				Player.eb.$emit(EventBus.event.PLAYER_TRACKCHANGED, {
+					isHigh:true,
+					artistTitle:Player.playlistTracks[Player.currSong].artists[0].name + '-' + Player.playlistTracks[Player.currSong].name,
+					artwork:Player.playlistTracks[Player.currSong].album.images[0].url
+				});
 			}
 		} else {
 			console.log(Player.currSongLow, Player.playlistTracksLow[Player.currSongLow], Player.analysis[Player.playlistTracksLow[Player.currSongLow].id]);
 			if (Player.currSongLow < Player.playlistTracksLow.length) {
-				Spotify.startSong(Player.playlistTracksLow[Player.currSongLow].id, Player.analysis[Player.playlistTracksLow[Player.currSongLow].id], deviceList.selected);
-				playInfo.artistTitle=Player.playlistTracksLow[Player.currSongLow].artists[0].name + '-' + Player.playlistTracksLow[Player.currSongLow].name;
-				playInfo.artwork = Player.playlistTracksLow[Player.currSongLow].album.images[0].url;
+				Spotify.startSong(Player.playlistTracksLow[Player.currSongLow].id, Player.analysis[Player.playlistTracksLow[Player.currSongLow].id], Store.state.selectedDevice);
+				//playInfo.artistTitle=Player.playlistTracksLow[Player.currSongLow].artists[0].name + '-' + Player.playlistTracksLow[Player.currSongLow].name;
+				//playInfo.artwork = Player.playlistTracksLow[Player.currSongLow].album.images[0].url;
+				Player.eb.$emit(EventBus.event.PLAYER_TRACKCHANGED, {
+					isHigh:true,
+					artistTitle:Player.playlistTracksLow[Player.currSongLow].artists[0].name + '-' + Player.playlistTracksLow[Player.currSongLow].name,
+					artwork:Player.playlistTracksLow[Player.currSongLow].album.images[0].url
+				});
 			}
 		}
 	},
@@ -106,7 +123,7 @@ const Player = {
 		Player.loTimer.stop();
 		Player.hiTimer.stop();
 		Player.totTimer.stop();
-		Spotify.pauseSong(deviceList.selected);
+		Spotify.pauseSong(Store.state.selectedDevice);
 		Player.eb.$emit(EventBus.event.PLAYER_STOPPED, 'PLAYER_STOPPED');
 	}
 }

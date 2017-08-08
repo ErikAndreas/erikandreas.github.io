@@ -20,28 +20,28 @@
 	<div id="settings">
 		<div id="devC">
 			<h2>Your devices</h2>
-			<select v-model="selected">			
+			<select v-model="shared.selectedDevice" v-on:change="deviceSelChanged">			
 				<option v-for="device in devices" v-bind:value="device.value">{{device.text}}</option>
 			</select>
 		</div>
 		<div id="wC">
 			<h2>Workout</h2>
-			<input type="number" min="1" v-model="tot"/> Total workout (minutes)<br/>
-			<input type="number" min="1" v-model="high"/> High intervall (secs)<br/>
-			<input type="number" min="1" v-model="low"/> Low intervall (secs)<br/>
+			<input type="number" min="1" v-model="shared.workout.tot"/> Total workout (minutes)<br/>
+			<input type="number" min="1" v-model="shared.workout.high"/> High intervall (secs)<br/>
+			<input type="number" min="1" v-model="shared.workout.low"/> Low intervall (secs)<br/>
 		</div>
 		<div id="plC">
 			<h2>Playlists</h2>
-			<div id="plch">High: <select v-model="selected" v-on:change="playlistSelChanged">			
+			<div id="plch">High: <select v-model="shared.playlist.high" v-on:change="playlistSelChanged">			
 				<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
 			</select></div>
-			<div id="plcl">Low: <select v-model="selected" v-on:change="playlistSelChanged">			
+			<div id="plcl">Low: <select v-model="shared.playlist.low" v-on:change="playlistSelChanged">			
 				<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
 			</select></div>
 		</div>
 		<div id="settingsC">
-			<input type="checkbox" v-bind:checked="shouldRandomize"> Randomize playlists<br/>
-			<input type="checkbox" v-bind:checked="shouldStartLow"> Start low<br/>
+			<input type="checkbox" v-bind:checked="shared.playlist.shouldRandomize"> Randomize playlists<br/>
+			<input type="checkbox" v-bind:checked="shared.playlist.shouldStartLow"> Start low<br/>
 		</div>
 
 		<span id="abc"><button @click="analyze()">Analyze</button></span>

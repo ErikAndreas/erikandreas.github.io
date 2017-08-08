@@ -14,8 +14,8 @@ const Analyzer = {
 		Analyzer.playlistTracksLow = [];
 		Analyzer.analysis = [];
 		Analyzer.outgoing = 0;
-		Analyzer._getPlaylistTracks(0,100,playlistsHigh.selected,null, Analyzer.playlistTracks);
-		Analyzer._getPlaylistTracks(0,100,playlistsLow.selected,null, Analyzer.playlistTracksLow);
+		Analyzer._getPlaylistTracks(0,100,Store.state.playlist.high,null, Analyzer.playlistTracks);
+		Analyzer._getPlaylistTracks(0,100,Store.state.playlist.low,null, Analyzer.playlistTracksLow);
 		// TODO: check fixTotTime + num of song avail per playlist for enough no songs
 	},
 	_getPlaylistTracks: async function (offset,limit,playlist,href, playlistTracks) {
