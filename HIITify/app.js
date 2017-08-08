@@ -35,7 +35,6 @@ const App = {
 			deviceData.devices.forEach((dev) => {
 		   		deviceList.devices.push({text: dev.type + ' - ' + dev.name, value: dev.id});
 			});		
-			//deviceList.selected = deviceList.devices[0].value;
 			Store.state.selectedDevice = deviceList.devices[0].value;
 			const me = await Spotify.me();				
 			console.log(me);
@@ -50,7 +49,6 @@ const App = {
 	},
 	getPlayLists: async function(offset, limit) {	
 		const plData = await Spotify.getPlayLists(offset, limit);
-		//console.log(plData);
 		plData.items.forEach((pl) => {
 			playlistsHigh.playlists.push({text:pl.name, value:pl.href});
 			playlistsLow.playlists.push({text:pl.name, value:pl.href});  			
@@ -58,8 +56,6 @@ const App = {
 		if (plData.next) {
 			App.getPlayLists(plData.offset + plData.limit, plData.limit);
 		} else {
-			//playlistsHigh.selected = playlistsHigh.playlists[0].value;
-			//playlistsLow.selected = playlistsLow.playlists[0].value;
 			Store.state.playlist.high = playlistsHigh.playlists[0].value;
 			Store.state.playlist.low = playlistsLow.playlists[0].value;
 		}
@@ -164,8 +160,6 @@ const analyzeButton = new Vue({
 const playlistSettings = new Vue({
 	el:'#settingsC',
 	data: {
-		//shouldRandomize: false,
-		//shouldStartLow: true
 		shared:Store.state
 	}
 });
@@ -188,7 +182,6 @@ const playInfo = new Vue({
 			this.isPlaying = false;
 		});
 		EventBus.$on(EventBus.event.PLAYER_TICK, (payload) => {
-			//console.log('event',payload)
 			this.tot=payload.totRemaining.toMMSS();
 			this.curr=payload.intervalRemaining.toSS();
 		});
@@ -207,15 +200,8 @@ const playInfo = new Vue({
 const workoutSettings = new Vue({
 	el: '#wC',
 	data: {
-		//tot:5,
-		//high:15,
-		//low:10
 		shared:Store.state
-	}/*,
-	computed: {
-		cycle: function() { return parseInt(this.high,10) + parseInt(this.low,10);},
-		totSecs:function() { return Math.ceil(this.tot * 60 / this.cycle)*this.cycle;}
-	}*/
+	}
 });
 /* UI
 /

@@ -22,8 +22,6 @@ const Player = {
 				console.log('tot end');
 			},
 			ontick: function() {
-				//playInfo.tot=Math.floor(Player.totTimer.getDuration()/1000).toMMSS();
-				//playInfo.curr=Math.floor(Player.isHigh?Player.hiTimer.getDuration()/1000:Player.loTimer.getDuration()/1000).toSS();
 				Player.eb.$emit(EventBus.event.PLAYER_TICK, {
 					totRemaining: Math.floor(Player.totTimer.getDuration()/1000),
 					intervalRemaining: Math.floor(Player.isHigh?Player.hiTimer.getDuration()/1000:Player.loTimer.getDuration()/1000)
@@ -97,8 +95,6 @@ const Player = {
 			console.log(Player.currSong, Player.playlistTracks[Player.currSong], Player.analysis[Player.playlistTracks[Player.currSong].id]);
 			if (Player.currSong < Player.playlistTracks.length) {
 				Spotify.startSong(Player.playlistTracks[Player.currSong].id, Player.analysis[Player.playlistTracks[Player.currSong].id], Store.state.selectedDevice);
-				//playInfo.artistTitle=Player.playlistTracks[Player.currSong].artists[0].name + '-' + Player.playlistTracks[Player.currSong].name;
-				//playInfo.artwork = Player.playlistTracks[Player.currSong].album.images[0].url;
 				Player.eb.$emit(EventBus.event.PLAYER_TRACKCHANGED, {
 					isHigh:true,
 					artistTitle:Player.playlistTracks[Player.currSong].artists[0].name + '-' + Player.playlistTracks[Player.currSong].name,
@@ -109,8 +105,6 @@ const Player = {
 			console.log(Player.currSongLow, Player.playlistTracksLow[Player.currSongLow], Player.analysis[Player.playlistTracksLow[Player.currSongLow].id]);
 			if (Player.currSongLow < Player.playlistTracksLow.length) {
 				Spotify.startSong(Player.playlistTracksLow[Player.currSongLow].id, Player.analysis[Player.playlistTracksLow[Player.currSongLow].id], Store.state.selectedDevice);
-				//playInfo.artistTitle=Player.playlistTracksLow[Player.currSongLow].artists[0].name + '-' + Player.playlistTracksLow[Player.currSongLow].name;
-				//playInfo.artwork = Player.playlistTracksLow[Player.currSongLow].album.images[0].url;
 				Player.eb.$emit(EventBus.event.PLAYER_TRACKCHANGED, {
 					isHigh:true,
 					artistTitle:Player.playlistTracksLow[Player.currSongLow].artists[0].name + '-' + Player.playlistTracksLow[Player.currSongLow].name,
