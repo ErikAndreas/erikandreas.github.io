@@ -17,56 +17,23 @@
 		<h2>HIITify</h2>
 		<a @click="login">Spotify login</a>
 	</div>
-	<div id="settings">
-		<div id="dev2">
-			<h2>Your devices</h2>
-			<device-list></device-list>
-			<h2>Workout</h2>
-			<setting v-bind:val="shared.workout.tot" v-on:input="shared.workout.tot = arguments[0]"></setting> Total workout (minutes)<br/>
-			<setting v-bind:val="shared.workout.high" v-on:input="shared.workout.high = arguments[0]"></setting> High intervall (secs)<br/>
-			<setting v-bind:val="shared.workout.low" v-on:input="shared.workout.low = arguments[0]"></setting> Low intervall (secs)<br/>
-			<h2>Playlists</h2>
-			<playlists-high></playlists-high>
-			<playlists-low></playlists-low>
-			<toggle v-model="shared.playlist.shouldRandomize"></toggle> Randomize playlists<br/>
-			<toggle v-model="shared.playlist.shouldStartLow"></toggle> Start low<br/>
-			<button-analyze>Analyze</button-analyze> <button-start>Start</button-start>
-			<playinfo></playinfo>
-		</div>
+	<div id="settings" v-show="current == views.SETTINGS">
+		<h2>Your devices</h2>
+		<device-list></device-list>
+		<h2>Workout</h2>
+		<setting v-bind:val="shared.workout.tot" v-on:input="shared.workout.tot = arguments[0]"></setting> Total workout (minutes)<br/>
+		<setting v-bind:val="shared.workout.high" v-on:input="shared.workout.high = arguments[0]"></setting> High intervall (secs)<br/>
+		<setting v-bind:val="shared.workout.low" v-on:input="shared.workout.low = arguments[0]"></setting> Low intervall (secs)<br/>
+		<h2>Playlists</h2>
+		<playlists-high></playlists-high>
+		<playlists-low></playlists-low>
+		<toggle v-model="shared.playlist.shouldRandomize"></toggle> Randomize playlists<br/>
+		<toggle v-model="shared.playlist.shouldStartLow"></toggle> Start low<br/>
+		<button-analyze>Analyze</button-analyze> <button-start>Start</button-start>		
 	</div>
-		<!--<div id="wC">
-			<h2>Workout</h2>
-			<input type="number" min="1" v-model="shared.workout.tot"/> Total workout (minutes)<br/>
-			<input type="number" min="1" v-model="shared.workout.high"/> High intervall (secs)<br/>
-			<input type="number" min="1" v-model="shared.workout.low"/> Low intervall (secs)<br/>
-		</div>
-		<div id="plC">
-			<h2>Playlists</h2>
-			<div id="plch">High: <select v-model="shared.playlist.high" v-on:change="playlistSelChanged">			
-				<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
-			</select></div>
-			<div id="plcl">Low: <select v-model="shared.playlist.low" v-on:change="playlistSelChanged">			
-				<option v-for="playlist in playlists" v-bind:value="playlist.value">{{playlist.text}}</option>
-			</select></div>
-		</div>
-		<div id="settingsC">
-			<input type="checkbox" v-bind:checked="shared.playlist.shouldRandomize"> Randomize playlists<br/>
-			<input type="checkbox" v-bind:checked="shared.playlist.shouldStartLow"> Start low<br/>
-		</div>
-
-		<span id="abc"><button @click="analyze()">Analyze</button></span>
-
-		<span id="sbc"><button v-bind:disabled="isDisabled" @click="start()">Start</button></span>
+	<div id="play" v-show="current == views.WORKOUT">
+		<playinfo></playinfo>
 	</div>
-	<div id="workout">
-		<div id="playInfo">
-			<div><a v-show="isPlaying" @click="stop">Quit</a></div>
-			<div id="tot">{{tot}}</div>
-			<div id="curr">{{curr}}</div>
-			<div id="artistTitle">{{artistTitle}}</div>
-			<img id="artwork" v-bind:src="artwork"></div>
-		</div>
-	</div>-->
 </div>
 	<script type="text/javascript" src="https://unpkg.com/vue"></script>
 	<script type="text/javascript" src="timer.js"></script>

@@ -97,7 +97,7 @@ const Player = {
 				Spotify.startSong(Player.playlistTracks[Player.currSong].id, Player.analysis[Player.playlistTracks[Player.currSong].id], Store.state.selectedDevice);
 				Player.eb.$emit(EventBus.event.PLAYER_TRACKCHANGED, {
 					isHigh:true,
-					artistTitle:Player.playlistTracks[Player.currSong].artists[0].name + '-' + Player.playlistTracks[Player.currSong].name,
+					artistTitle:Player.playlistTracks[Player.currSong].artists[0].name + ' - ' + Player.playlistTracks[Player.currSong].name,
 					artwork:Player.playlistTracks[Player.currSong].album.images[0].url
 				});
 			}
@@ -107,7 +107,7 @@ const Player = {
 				Spotify.startSong(Player.playlistTracksLow[Player.currSongLow].id, Player.analysis[Player.playlistTracksLow[Player.currSongLow].id], Store.state.selectedDevice);
 				Player.eb.$emit(EventBus.event.PLAYER_TRACKCHANGED, {
 					isHigh:true,
-					artistTitle:Player.playlistTracksLow[Player.currSongLow].artists[0].name + '-' + Player.playlistTracksLow[Player.currSongLow].name,
+					artistTitle:Player.playlistTracksLow[Player.currSongLow].artists[0].name + ' - ' + Player.playlistTracksLow[Player.currSongLow].name,
 					artwork:Player.playlistTracksLow[Player.currSongLow].album.images[0].url
 				});
 			}

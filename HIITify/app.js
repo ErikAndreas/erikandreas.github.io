@@ -16,83 +16,10 @@ const Store = {
 			high:12,
 			low:14
 		},
-		isStartDisabled:true,
-		playInfo: {
-			curr:'',
-			tot:'',
-			artistTitle:'',
-			artwork:'',
-			isPlaying: false
-		}
+		isStartDisabled:true
 	}
 };
 
-const App = {
-	client_id: '9d4ecfc733cf415887763c509a274bc5',
-	init: async function() {
-		console.log('app');
-		View.current = View.views.INIT;
-		if (!Spotify.token &&!location.hash) {
-			Spotify.client_id = App.client_id;
-			Spotify.login();
-		} else {
-			View.current = View.views.SETTINGS;
-			const o = new URLSearchParams(location.hash.substring(1));
-			//TODO: check state matches
-			Spotify.token = o.get('access_token');
-			console.log(Spotify.token);
-			const deviceData = await Spotify.devices();
-			//deviceList.devices = [];
-			Store.state.devices = []
-			deviceData.devices.forEach((dev) => {
-		   		//deviceList.devices.push({text: dev.type + ' - ' + dev.name, value: dev.id});
-		   		Store.state.devices.push({text: dev.type + ' - ' + dev.name, value: dev.id});
-			});		
-			Store.state.selectedDevice = Store.state.devices[0].value;
-			const me = await Spotify.me();				
-			console.log(me);
-			Analyzer.init(EventBus);
-			Player.init(EventBus);
-			App.getPlayLists(0, 50);
-		}
-		EventBus.$on(EventBus.event.DEVICE_CHANGED, (payload) => {
-			console.log('event',payload)
-			Store.state.selectedDevice = payload;
-		});
-	},
-	getPlayLists: async function(offset, limit) {	
-		const plData = await Spotify.getPlayLists(offset, limit);
-		plData.items.forEach((pl) => {
-			//playlistsHigh.playlists.push({text:pl.name, value:pl.href});
-			Store.state.playlist.highs.push({text:pl.name, value:pl.href});
-			//playlistsLow.playlists.push({text:pl.name, value:pl.href}); 
-			Store.state.playlist.lows.push({text:pl.name, value:pl.href}); 	
-		});
-		if (plData.next) {
-			App.getPlayLists(plData.offset + plData.limit, plData.limit);
-		} else {
-			Store.state.playlist.high = Store.state.playlist.highs[0].value;
-			Store.state.playlist.low = Store.state.playlist.lows[0].value;
-		}
-	}
-};
-const View = new Vue({
-	// gotcha, cant nest vue instances, root might be instance, childs must be components	
-	//el: '#viewRoot',
-	data: {
-		views: {
-			INIT: 'init',
-			SETTINGS: 'settings', 
-			WORKOUT: 'workout'
-		},
-		current: ''
-	},
-	methods: {
-		login() {
-			Spotify.login();
-		}
-	}
-});
 const EventBus = new Vue({
 	data: {
 		event: {
@@ -213,35 +140,41 @@ Vue.component('button-start', {
 Vue.component('playinfo', {
 	template: `
 		<div id="playInfo">
-			<div><a v-show="shared.playInfo.isPlaying" @click="stop">Quit</a></div>
-			<div id="tot">{{shared.playInfo.tot}}</div>
-			<div id="curr">{{shared.playInfo.curr}}</div>
-			<div id="artistTitle">{{shared.playInfo.artistTitle}}</div>
-			<img id="artwork" v-bind:src="shared.playInfo.artwork"></div>
+			<div><a v-show="isPlaying" @click="stop">Quit</a></div>
+			<div id="tot">{{tot}}</div>
+			<div id="curr">{{curr}}</div>
+			<div id="artistTitle">{{artistTitle}}</div>
+			<img id="artwork" v-bind:src="artwork"></div>
 		</div>
 	`,
 	data: () => {
 		return {
-			shared:Store.state
+			curr:'',
+			tot:'',
+			artistTitle:'',
+			artwork:'',
+			isPlaying: false
 		}
 	},
 	created: function() {
 		EventBus.$on(EventBus.event.PLAYER_STARTED, (payload) => {
-			console.log('event',payload)
-			Store.state.playInfo.isPlaying = true;
+			console.log('event',payload);
+			View.current = View.views.WORKOUT;
+			this.isPlaying = true;
 		});
 		EventBus.$on(EventBus.event.PLAYER_STOPPED, (payload) => {
 			console.log('event',payload)
-			Store.state.playInfo.isPlaying = false;
+			View.current = View.views.SETTINGS;
+			this.isPlaying = false;
 		});
 		EventBus.$on(EventBus.event.PLAYER_TICK, (payload) => {
-			Store.state.playInfo.tot=payload.totRemaining.toMMSS();
-			Store.state.playInfo.curr=payload.intervalRemaining.toSS();
+			this.tot=payload.totRemaining.toMMSS();
+			this.curr=payload.intervalRemaining.toSS();
 		});
 		EventBus.$on(EventBus.event.PLAYER_TRACKCHANGED, (payload) => {
 			console.log('event',payload)
-			Store.state.playInfo.artistTitle=payload.artistTitle;
-			Store.state.playInfo.artwork=payload.artwork;
+			this.artistTitle=payload.artistTitle;
+			this.artwork=payload.artwork;
 		});
 	},
 	methods: {
@@ -251,7 +184,72 @@ Vue.component('playinfo', {
 	}
 });
 
-new Vue({el:'#dev2',data:{shared:Store.state}});
+const View = new Vue({
+	// gotcha, cant nest vue instances, root might be instance, childs must be components	
+	el: '#viewRoot',
+	data: {
+		views: {
+			INIT: 'init',
+			SETTINGS: 'settings', 
+			WORKOUT: 'workout'
+		},
+		current: '',
+		shared:Store.state
+	},
+	methods: {
+		login() {
+			Spotify.login();
+		}
+	}
+});
+
+const App = {
+	client_id: '9d4ecfc733cf415887763c509a274bc5',
+	init: async function() {
+		console.log('app');
+		View.current = View.views.INIT;
+		if (!Spotify.token &&!location.hash) {
+			Spotify.client_id = App.client_id;
+			Spotify.login();
+		} else {
+			View.current = View.views.SETTINGS;
+			const o = new URLSearchParams(location.hash.substring(1));
+			//TODO: check state matches
+			Spotify.token = o.get('access_token');
+			console.log(Spotify.token);
+			const deviceData = await Spotify.devices();
+			Store.state.devices = []
+			deviceData.devices.forEach((dev) => {
+		   		Store.state.devices.push({text: dev.type + ' - ' + dev.name, value: dev.id});
+			});		
+			Store.state.selectedDevice = Store.state.devices[0].value;
+			const me = await Spotify.me();				
+			console.log(me);
+			Analyzer.init(EventBus);
+			Player.init(EventBus);
+			App.getPlayLists(0, 50);
+		}
+		EventBus.$on(EventBus.event.DEVICE_CHANGED, (payload) => {
+			console.log('event',payload)
+			Store.state.selectedDevice = payload;
+		});
+	},
+	getPlayLists: async function(offset, limit) {	
+		const plData = await Spotify.getPlayLists(offset, limit);
+		plData.items.forEach((pl) => {
+			Store.state.playlist.highs.push({text:pl.name, value:pl.href});
+			Store.state.playlist.lows.push({text:pl.name, value:pl.href}); 	
+		});
+		if (plData.next) {
+			App.getPlayLists(plData.offset + plData.limit, plData.limit);
+		} else {
+			Store.state.playlist.high = Store.state.playlist.highs[0].value;
+			Store.state.playlist.low = Store.state.playlist.lows[0].value;
+		}
+	}
+};
+
+//new Vue({el:'#dev2',data:{shared:Store.state}});
 
 /* UI
 /
