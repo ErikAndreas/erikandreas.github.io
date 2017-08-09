@@ -210,7 +210,7 @@ const App = {
 		View.current = View.views.INIT;
 		if (!Spotify.token &&!location.hash) {
 			Spotify.client_id = App.client_id;
-			Spotify.login();
+			//Spotify.login();
 		} else {
 			View.current = View.views.SETTINGS;
 			const o = new URLSearchParams(location.hash.substring(1));
