@@ -1,12 +1,15 @@
 "use strict"
 const Spotify = {
-	client_id: '',
+	client_id: '9d4ecfc733cf415887763c509a274bc5',
 	token: '',
 	userCountry: '',
 	userId: '',
 	isPlaying: false,
 	login: function() {
 		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&redirect_uri=http%3A%2F%2Flocalhost%3A8080&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
+	},
+	logout: () => {
+		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&show_dialog=true&response_type=token&redirect_uri=http%3A%2F%2Flocalhost%3A8080');
 	},
 	req: function(url) {
 		return new Request(url,{

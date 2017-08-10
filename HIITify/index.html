@@ -13,11 +13,12 @@
 </head>
 <body>
 <div id="viewRoot">
-	<div id="init" v-show="current == views.INIT">
-		<h2>HIITify</h2>
+	<h2>HIITify</h2>
+	<div id="init" v-show="current == views.INIT">		
 		<button @click="login">Spotify login</button>
 	</div>
 	<div id="settings" v-show="current == views.SETTINGS">
+		<button @click="logout">Logout</button>
 		<h2>Your devices</h2>
 		<device-list></device-list>
 		<h2>Workout</h2>

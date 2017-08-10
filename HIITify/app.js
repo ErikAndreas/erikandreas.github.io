@@ -199,17 +199,20 @@ const View = new Vue({
 	methods: {
 		login() {
 			Spotify.login();
+		},
+		logout() {
+			Spotify.logout();
 		}
 	}
 });
 
 const App = {
-	client_id: '9d4ecfc733cf415887763c509a274bc5',
+	
 	init: async function() {
 		console.log('app');
 		View.current = View.views.INIT;
 		if (!Spotify.token &&!location.hash) {
-			Spotify.client_id = App.client_id;
+			//Spotify.client_id = App.client_id;
 			//Spotify.login();
 		} else {
 			View.current = View.views.SETTINGS;
