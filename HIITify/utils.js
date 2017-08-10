@@ -12,6 +12,7 @@ Number.prototype.toMMSS = function () {
 Number.prototype.toSS = function () {
     const sec_num = parseInt(this, 10); // don't forget the second param
     let seconds = sec_num;
+    if (seconds < 0) {seconds = 0;}
     if (seconds < 10) {seconds = "0"+seconds;}
     return seconds;
 }
