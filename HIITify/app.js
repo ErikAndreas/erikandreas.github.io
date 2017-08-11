@@ -140,11 +140,11 @@ Vue.component('button-start', {
 Vue.component('playinfo', {
 	template: `
 		<div id="playInfo">
-			<div><a v-show="isPlaying" @click="stop">Quit</a></div>
+			<div><button v-show="isPlaying" @click="stop">Quit</button></div>
 			<div id="tot">{{tot}}</div>
 			<div id="curr">{{curr}}</div>
 			<div id="artistTitle">{{artistTitle}}</div>
-			<img id="artwork" v-bind:src="artwork"></div>
+			<div id="artwork"><img v-bind:src="artwork"></div>
 		</div>
 	`,
 	data: () => {
