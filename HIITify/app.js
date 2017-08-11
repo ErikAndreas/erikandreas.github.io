@@ -141,10 +141,12 @@ Vue.component('playinfo', {
 	template: `
 		<div id="playInfo">
 			<div><button v-show="isPlaying" @click="stop">Quit</button></div>
+			<span style="text-align: center">
 			<div id="tot">{{tot}}</div>
-			<div id="curr">{{curr}}</div>
-			<div id="artistTitle">{{artistTitle}}</div>
+			<div id="curr" style="font-size: 3em">{{curr}}</div>
 			<div id="artwork"><img v-bind:src="artwork"></div>
+			<div id="artistTitle">{{artistTitle}}</div>			
+			</span>
 		</div>
 	`,
 	data: () => {
