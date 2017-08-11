@@ -6,11 +6,14 @@ const Spotify = {
 	userId: '',
 	isPlaying: false,
 	host: encodeURIComponent('http://localhost:8080'),
+	hostProd: encodeURIComponent('http://www.nyhren.se/HIITify'),
 	login: function() {
-		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&redirect_uri='+Spotify.host+'&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
+		const host = (window.location.hostname === 'www.nyhren.se') ? Spotify.hostProd : Spotify.host;
+		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&redirect_uri='+host+'&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
 	},
 	logout: () => {
-		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&show_dialog=true&response_type=token&redirect_uri='+Spotify.host);
+		const host = (window.location.hostname === 'www.nyhren.se') ? Spotify.hostProd : Spotify.host;
+		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&show_dialog=true&response_type=token&redirect_uri='+host);
 	},
 	req: function(url) {
 		return new Request(url,{
