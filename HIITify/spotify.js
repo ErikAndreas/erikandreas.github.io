@@ -5,11 +5,12 @@ const Spotify = {
 	userCountry: '',
 	userId: '',
 	isPlaying: false,
+	host: encodeURIComponent('http://localhost:8080'),
 	login: function() {
-		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&redirect_uri=http%3A%2F%2Flocalhost%3A8080&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
+		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&redirect_uri='+Spotify.host+'&scope=user-read-private%20user-read-playback-state%20playlist-read-private%20playlist-read-collaborative%20user-modify-playback-state&response_type=token&state=123');
 	},
 	logout: () => {
-		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&show_dialog=true&response_type=token&redirect_uri=http%3A%2F%2Flocalhost%3A8080');
+		window.location.replace('https://accounts.spotify.com/authorize?client_id='+Spotify.client_id+'&show_dialog=true&response_type=token&redirect_uri='+Spotify.host);
 	},
 	req: function(url) {
 		return new Request(url,{

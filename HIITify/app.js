@@ -65,7 +65,7 @@ Vue.component('setting', {
 Vue.component('playlists-high', {
 	template: `	
 			<span>High: <select v-model="shared.playlist.high" v-on:change="playlistSelChanged">			
-				<option v-for="playlist in shared.playlist.highs" v-bind:value="playlist.value">{{playlist.text}}</option>
+				<option v-for="playlist in shared.playlist.highs" v-bind:value="playlist.value">{{playlist.text.trunc(40)}}</option>
 			</select></span>
 			`,
 	data: () => {
@@ -83,7 +83,7 @@ Vue.component('playlists-high', {
 Vue.component('playlists-low', {
 	template: `	
 			<div>Low: <select v-model="shared.playlist.low" v-on:change="playlistSelChanged">			
-				<option v-for="playlist in shared.playlist.lows" v-bind:value="playlist.value">{{playlist.text}}</option>
+				<option v-for="playlist in shared.playlist.lows" v-bind:value="playlist.value">{{playlist.text.trunc(40)}}</option>
 			</select></div>
 			`,
 	data: () => {
