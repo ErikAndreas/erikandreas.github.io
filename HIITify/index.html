@@ -11,7 +11,7 @@
 	    body {	        
 	        font-family: 'Roboto', sans-serif;
 	    }
-	    h1,h2 {
+	    h1,h2,h3 {
 	    	font-family: 'Montserrat', sans-serif;
 	    }
 	    h1 {
@@ -67,6 +67,12 @@
 			min-width: 30%;
 			height: auto;
 		}
+		.highlight {
+			font-size: 1.2em;
+			font-family: 'Montserrat', sans-serif;
+			color: grey;
+			font-style: italic;
+		}
 	</style>
 	<link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto" rel="stylesheet">
 </head>
@@ -76,8 +82,34 @@
 		<div class="con"><img class="resize" src="img/logo.png"/> <h1>HIITify</h1></div>
 	</div>
 	<div class="con">
-		<div id="init" v-show="current == views.INIT">		
+		<div id="init" v-show="current == views.INIT">
+			<span class="highlight">
+				<p>High Intensity Interval Training timer which plays music from your selected Spotify Playlists.</p><p>HIITify analyzes the playlists to start each song at the most intense part - no intros, no slow parts!"</p>
+			</span>	
 			<button @click="login">Spotify login</button>
+			<p style="font-weight: bold">This product requires a Spotify Premium Account!</p>
+			<h3>TOP FEATURES</h3>
+			<ul>
+				<li>Select total workout time, low interval time and high interval time<!-- or select from one of the presets (Tabata, Gibala, Zuniga, Timmons)-->.</li>
+				<li>Select Warm Up and Cooldown time.</li>
+				<li>Select Spotify Playlists for high and low interval respectively.</li>
+				<li> Start high or start low.</li>
+				<li>Randomize playlist songs.</li>
+				<li>Interval countdown beep.</li>
+				<li>Analysis of your playlists to skip to the most intense part of each song for each interval.</li>
+				<li> Workout showing total time left as well as time left on current interval.</li>
+				<li> Current song name and artist.</li>
+				<li> Current song BPM.</li>
+				<li>Current interval (high or low)</li>
+				<li> Song album artwork.</li>
+			</ul>
+			
+			<h3>NOTES</h3>
+			<ul>
+				<li>This product relies heavily on Spotify API's which are still in Beta.</li>
+				<li>There are many services out there which curates or generates playlists for various purposes; genres, bpm etc, use those! This product is about your workout to your music.</li>
+				<li>The analysis will use quite a lot of network data.</li>
+			</ul>
 		</div>
 		<div id="settings" v-show="current == views.SETTINGS">
 			<button @click="logout">Logout</button>
