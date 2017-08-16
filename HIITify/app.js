@@ -36,9 +36,10 @@ const EventBus = new Vue({
 
 Vue.component('device-list', {
 	template: `	
-			<select v-model="shared.selectedDevice" v-on:change="deviceSelChanged">
+			<select v-if="shared.devices.length" v-model="shared.selectedDevice" v-on:change="deviceSelChanged">
 				<option v-for="device in shared.devices" v-bind:value="device.value">{{device.text}}</option>
 			</select>
+			<div v-else-if="!shared.devices.length" style="color:red">No devices found, start Spotify on a device and refresh page</div>
 			`,
 	data: () => {
 		return {
@@ -226,8 +227,10 @@ const App = {
 			Store.state.devices = []
 			deviceData.devices.forEach((dev) => {
 		   		Store.state.devices.push({text: dev.type + ' - ' + dev.name, value: dev.id});
-			});		
-			Store.state.selectedDevice = Store.state.devices[0].value;
+			});
+			if (Store.state.devices.length) {
+				Store.state.selectedDevice = Store.state.devices[0].value;
+			}
 			const me = await Spotify.me();				
 			console.log(me);
 			Analyzer.init(EventBus);
