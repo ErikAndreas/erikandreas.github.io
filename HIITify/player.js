@@ -85,8 +85,12 @@ const Player = {
 		const totSecs = Math.ceil(Store.state.workout.tot * 60 / cycle) * cycle;
 		console.log('totsecs',totSecs);
 		Player.totTimer.start(totSecs);
-		// TODO: toggle start high|low
-		Player.loTimer.start(Store.state.workout.low);
+		if (Store.state.playlist.shouldStartLow) {
+			Player.loTimer.start(Store.state.workout.low);
+		} else {
+			Player.isHigh = true;
+			Player.hiTimer.start(Store.state.workout.high);
+		}
 		Player.eb.$emit(EventBus.event.PLAYER_STARTED, 'PLAYER_STARTED');
 	},
 	handlePlay: () => {
