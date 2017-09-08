@@ -4,7 +4,7 @@ self.addEventListener('install', e => {
       return cache.addAll([
        '/HIITify/',
        '/HIITify/index.html',
-       '/HIITify/index.htm?homescreen=1',
+       '/HIITify/index.html?homescreen=1',
        '/HIITify/?homescreen=1',
        '/HIITify/img/logo.png'
       ])
