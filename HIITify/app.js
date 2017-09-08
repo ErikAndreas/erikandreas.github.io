@@ -259,7 +259,7 @@ const App = {
 
 if('serviceWorker' in navigator) {
 	navigator.serviceWorker
-      .register('./sw.js')
+      .register('/HIITify/sw.js')
       .then(function() { console.log("Service Worker Registered"); });
 }
 
