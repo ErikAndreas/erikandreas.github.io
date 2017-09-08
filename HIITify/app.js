@@ -257,6 +257,12 @@ const App = {
 	}
 };
 
+if('serviceWorker' in navigator) {
+	navigator.serviceWorker
+      .register('./sw.js')
+      .then(function() { console.log("Service Worker Registered"); });
+}
+
 //new Vue({el:'#dev2',data:{shared:Store.state}});
 
 /* UI
