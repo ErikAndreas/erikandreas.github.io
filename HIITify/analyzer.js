@@ -25,7 +25,12 @@ const Analyzer = {
 		for (let i = 0; i < data.items.length; i++) {
 			if (data.items[i].track.is_playable) {
 				if (i > 0) ids += ",";
-				ids += data.items[i].track.id;
+				if (!localStorage.getItem(data.items[i].track.id)) {
+					ids += data.items[i].track.id;
+				} else {
+					console.log('track already in local cache');
+					Analyzer.outgoing--;					
+				}
 				//console.log(data.items[i]);
 				playlistTracks.push(data.items[i].track);
 			} else {
@@ -78,6 +83,20 @@ const Analyzer = {
 				if (0 === Analyzer.outgoing) Analyzer.eb.$emit(EventBus.event.ANALYSIS_DONE,Analyzer.analysis);			
 			}
 		});
+	},
+	_getServerAudioFeatures: async (ids) => {
+		try {
+			var response = await fetch('https://localhost:5000/Spotify/Analysis?ids='+ids+'&token='+Spotify.token);
+			var data = await response.json();
+			for (var [key, value] of data) {
+				Analyzer.analysis[key] = value;
+				localStorage.setItem(key, value);
+				Analyzer.outgoing--;
+			}
+			if (0 === Analyzer.outgoing) Analyzer.eb.$emit(EventBus.event.ANALYSIS_DONE,Analyzer.analysis);	
+		  } catch (e) {
+			console.error("Fail server analysis", e);
+		  }
 	}
 
 }
