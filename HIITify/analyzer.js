@@ -24,11 +24,13 @@ const Analyzer = {
 		Analyzer.outgoing += data.items.length;
 		for (let i = 0; i < data.items.length; i++) {
 			if (data.items[i].track.is_playable) {
-				if (i > 0) ids += ",";
-				if (!localStorage.getItem(data.items[i].track.id)) {
+				let cached = localStorage.getItem(data.items[i].track.id)
+				if (!cached) {
+					if (ids.length > 0) ids += ",";
 					ids += data.items[i].track.id;
 				} else {
 					console.log('track already in local cache');
+					Analyzer.analysis[data.items[i].track.id] = cached;
 					Analyzer.outgoing--;					
 				}
 				//console.log(data.items[i]);
@@ -38,16 +40,19 @@ const Analyzer = {
 				Analyzer.outgoing--;
 			}
 		}
-		Analyzer._getAudioFeatures(ids);
+		if (ids.length > 0) {
+			Analyzer._getAudioFeatures(ids);
+		}
 		if (data && data.next) {
 			Analyzer._getPlaylistTracks(data.offset + data.limit, data.limit, null, data.next, playlistTracks);
 		} else {
 			console.log('playlist tracks done ' + Analyzer.outgoing, playlistTracks);
+			if (0 === Analyzer.outgoing) Analyzer.eb.$emit(EventBus.event.ANALYSIS_DONE, Analyzer.analysis);
 		}
 	},
 	_getAudioFeatures: async (ids) => {
 		const data = await Spotify.getAudioFeatures(ids);
-		//console.log(data);
+		console.log(data);
 		data.audio_features.forEach(async af => {
 			var lsid = localStorage.getItem(af.id);
 			if (!lsid) {
