@@ -127,7 +127,16 @@ Vue.component('button-start', {
 		});
 		EventBus.$on(EventBus.event.ANALYSIS_DONE, (payload) => {
 			console.log('event', payload);
-			Store.state.isStartDisabled = false;
+			const cycle = parseInt(Store.state.workout.high,10) + parseInt(Store.state.workout.low,10);
+			const songsPerPlaylist = Math.ceil(Store.state.workout.tot * 60 / cycle);
+			console.log("songsPerPlaylist", songsPerPlaylist);
+			if (Analyzer.playlistTracksLow.length < songsPerPlaylist) {
+				console.log("need more than " + songsPerPlaylist + " songs low");
+			} else if (Analyzer.playlistTracks.length < songsPerPlaylist) {
+				console.log("need more than " + songsPerPlaylist + " songs high");			
+			} else {
+				Store.state.isStartDisabled = false;
+			}
 		})
 	},
 	methods: {
