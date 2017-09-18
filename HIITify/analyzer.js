@@ -52,7 +52,7 @@ const Analyzer = {
 	},
 	_getAudioFeatures: async (ids) => {
 		const data = await Spotify.getAudioFeatures(ids);
-		console.log(data);
+		//console.log(data);
 		data.audio_features.forEach(async af => {
 			var lsid = localStorage.getItem(af.id);
 			if (!lsid) {
