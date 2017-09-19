@@ -1,5 +1,5 @@
 "use strict"
-const Store = {
+let Store = {
 	state: {
 		selectedDevice:'isd',
 		devices: [],
@@ -141,6 +141,7 @@ Vue.component('button-start', {
 				Store.state.playlist.tooFewSongsInPlaylist = true;			
 			} else {
 				Store.state.isStartDisabled = false;
+				Store.state.playlist.tooFewSongsInPlaylist = false;
 			}
 		})
 	},
@@ -148,6 +149,7 @@ Vue.component('button-start', {
 		start() {
 			View.current = View.views.WORKOUT;
 			Player.start();
+			localStorage.setItem("viewModelState", JSON.stringify(Store));
 		}
 	}
 });
@@ -267,6 +269,15 @@ const App = {
 		} else {
 			Store.state.playlist.high = Store.state.playlist.highs[0].value;
 			Store.state.playlist.low = Store.state.playlist.lows[0].value;
+			let viewModelState = JSON.parse(localStorage.getItem("viewModelState"));
+			console.log(viewModelState);
+			Store.state.workout.tot = viewModelState.state.workout.tot;
+			Store.state.workout.high = viewModelState.state.workout.high;
+			Store.state.workout.low = viewModelState.state.workout.low;
+			Store.state.playlist.shouldRandomize = viewModelState.state.playlist.shouldRandomize;
+			Store.state.playlist.shouldStartLow = viewModelState.state.playlist.shouldStartLow;
+			Store.state.playlist.high = viewModelState.state.playlist.high;
+			Store.state.playlist.low = viewModelState.state.playlist.low;
 		}
 	}
 };
