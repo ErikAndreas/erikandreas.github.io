@@ -9,7 +9,8 @@ const Store = {
 			high:'', // href
 			low: '',
 			shouldRandomize: false,
-			shouldStartLow: true
+			shouldStartLow: true,
+			tooFewSongsInPlaylist: false
 		},
 		workout: {
 			tot:3,
@@ -132,8 +133,12 @@ Vue.component('button-start', {
 			console.log("songsPerPlaylist", songsPerPlaylist);
 			if (Analyzer.playlistTracksLow.length < songsPerPlaylist) {
 				console.log("need more than " + songsPerPlaylist + " songs low");
+				Store.state.playlist.tooFewSongsInPlaylist = true;
+				Store.state.playlist.tooFewSongsText = "Need more than " + songsPerPlaylist + " songs in Playlist low";
 			} else if (Analyzer.playlistTracks.length < songsPerPlaylist) {
-				console.log("need more than " + songsPerPlaylist + " songs high");			
+				console.log("need more than " + songsPerPlaylist + " songs high");
+				Store.state.playlist.tooFewSongsText = "Need more than " + songsPerPlaylist + " songs in Playlist high";				
+				Store.state.playlist.tooFewSongsInPlaylist = true;			
 			} else {
 				Store.state.isStartDisabled = false;
 			}

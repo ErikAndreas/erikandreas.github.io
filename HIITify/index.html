@@ -125,6 +125,7 @@
 			<h2>Playlists</h2>
 			<playlists-high></playlists-high>
 			<playlists-low></playlists-low>
+			<div v-if="shared.playlist.tooFewSongsInPlaylist" style="color:red">{{shared.playlist.tooFewSongsText}}</div>
 			<toggle v-model="shared.playlist.shouldRandomize"></toggle> Randomize playlists<br/>
 			<toggle v-model="shared.playlist.shouldStartLow"></toggle> Start low<br/>
 			<button-analyze>Analyze</button-analyze> <button-start>Start</button-start>		
