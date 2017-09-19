@@ -42,6 +42,7 @@ const Analyzer = {
 		}
 		if (ids.length > 0) {
 			Analyzer._getAudioFeatures(ids);
+			//Analyzer._getServerAudioFeatures(ids);
 		}
 		if (data && data.next) {
 			Analyzer._getPlaylistTracks(data.offset + data.limit, data.limit, null, data.next, playlistTracks);
@@ -91,13 +92,16 @@ const Analyzer = {
 	},
 	_getServerAudioFeatures: async (ids) => {
 		try {
-			var response = await fetch('https://localhost:5000/Spotify/Analysis?ids='+ids+'&token='+Spotify.token);
+			var response = await fetch('http://localhost:5000/Spotify/Analysis?ids='+ids+'&token='+Spotify.token);
 			var data = await response.json();
-			for (var [key, value] of data) {
-				Analyzer.analysis[key] = value;
-				localStorage.setItem(key, value);
-				Analyzer.outgoing--;
-			}
+			console.log(data);
+			Object.entries(data).forEach(
+				([key, value]) => {
+					Analyzer.analysis[key] = value;
+					localStorage.setItem(key, value);
+					Analyzer.outgoing--;
+				}
+			);
 			if (0 === Analyzer.outgoing) Analyzer.eb.$emit(EventBus.event.ANALYSIS_DONE,Analyzer.analysis);	
 		  } catch (e) {
 			console.error("Fail server analysis", e);
