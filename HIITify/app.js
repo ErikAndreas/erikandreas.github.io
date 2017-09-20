@@ -269,15 +269,18 @@ const App = {
 		} else {
 			Store.state.playlist.high = Store.state.playlist.highs[0].value;
 			Store.state.playlist.low = Store.state.playlist.lows[0].value;
-			let viewModelState = JSON.parse(localStorage.getItem("viewModelState"));
-			console.log(viewModelState);
-			Store.state.workout.tot = viewModelState.state.workout.tot;
-			Store.state.workout.high = viewModelState.state.workout.high;
-			Store.state.workout.low = viewModelState.state.workout.low;
-			Store.state.playlist.shouldRandomize = viewModelState.state.playlist.shouldRandomize;
-			Store.state.playlist.shouldStartLow = viewModelState.state.playlist.shouldStartLow;
-			Store.state.playlist.high = viewModelState.state.playlist.high;
-			Store.state.playlist.low = viewModelState.state.playlist.low;
+			let viewModelState = localStorage.getItem("viewModelState");
+			if (viewModelState) {
+				viewModelState = JSON.parse(viewModelState);
+				console.log(viewModelState);
+				Store.state.workout.tot = viewModelState.state.workout.tot;
+				Store.state.workout.high = viewModelState.state.workout.high;
+				Store.state.workout.low = viewModelState.state.workout.low;
+				Store.state.playlist.shouldRandomize = viewModelState.state.playlist.shouldRandomize;
+				Store.state.playlist.shouldStartLow = viewModelState.state.playlist.shouldStartLow;
+				Store.state.playlist.high = viewModelState.state.playlist.high;
+				Store.state.playlist.low = viewModelState.state.playlist.low;
+			}
 		}
 	}
 };
