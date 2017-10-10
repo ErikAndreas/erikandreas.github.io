@@ -69,6 +69,7 @@ Vue.component('playlists', {
 
 Vue.component('songs-list', {
 	template: `<div><ol><li v-for="(track, idx) in shared.playlistTracks">
+				<input ref="input" style="width:3em" type="text" v-model="track.note"/>
 				{{track.title}} - {{track.artist}} <input ref="input" type="number" v-model="track.startAt"/> <button @click="play(track.id, track.startAt)">Play</button>
 			   </li></ol></div>
 		`,
@@ -188,12 +189,16 @@ const App = {
 					title: data.items[i].track.name,
 					artist: data.items[i].track.artists[0].name,
 					id: data.items[i].track.id,
-					startAt: 0
+					startAt: 0,
+					note: ''
 				};
 				if (cache) {
 					preset.tracks.forEach((t) => {
 						if (t.id == track.id && t.startAt != 0) {
 							track.startAt = t.startAt;
+						}
+						if (t.id == track.id && t.note) {
+							track.note = t.note;
 						}
 					});
 				}
