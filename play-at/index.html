@@ -72,15 +72,16 @@
 	<div class="con">
 		<div id="init" v-show="current == views.INIT">
 			<span class="highlight">
-				<p>Set a specific time to start each song in a Spotify playlist.</p>
+				<p>Set a specific time to start each song in a Spotify playlist and playback on any device with Spotify installed.</p>
 			</span>	
 			<button @click="login">Spotify login</button>
 			<p style="font-weight: bold">This product requires a Spotify Premium Account!</p>
 			<h3>FEATURES</h3>
 			<ul>
 				<li>Set time to start each song in a playlist.</li>
-				<li>Save your start per song per playlist.</li>
+				<li>Save your start per song per playlist. (Saves on your local devices in your browser, i.e local storage)</li>
 				<li>Order of songs may be changed in playlist while start time per song is kept.</li>
+				<li>Add note per song (notes and start are saved per song id so song duplicates will get same values, sorry...)</li>
 			</ul>
 			
 			<h3>NOTES</h3>
