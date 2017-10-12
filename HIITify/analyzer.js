@@ -64,13 +64,21 @@ const Analyzer = {
 					const loudness = analysisData.track.loudness;
 					const eofi = analysisData.track.end_of_fade_in;
 					let startAt = 0;
+					let maxDiff = {loudness:-100,at:0};
 					for (let i = 0; i < analysisData.sections.length;i++) {
-						if (analysisData.sections[i].duration >= 20 && analysisData.sections[i].loudness > loudness) {
-							startAt = analysisData.sections[i].start;
-							break;
+						if (analysisData.sections[i].duration >= 20) {
+							if (analysisData.sections[i].loudness-loudness > maxDiff.loudness) {
+								maxDiff.loudness = analysisData.sections[i].loudness-loudness;
+								maxDiff.at = analysisData.sections[i].start;
+							}
+							console.log(analysisData.sections[i].start, analysisData.sections[i].loudness, analysisData.sections[i].duration, analysisData.sections[i].loudness-loudness, maxDiff.at);
+							if (analysisData.sections[i].loudness > loudness) {
+								startAt = analysisData.sections[i].start;
+								break;
+							}
 						}
 					}
-					startAt = Math.max(startAt, eofi);
+					startAt = Math.max(startAt, eofi, maxDiff.at);
 					// assumption: audio features analysis url has format /audio-analysis/spotifysongid
 					const str = "/audio-analysis/"
 					const id = url.substring(url.lastIndexOf(str)+ str.length);
