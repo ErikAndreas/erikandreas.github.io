@@ -1,4 +1,11 @@
 "use strict"
+/**
+ * https://developers.google.com/web/fundamentals/push-notifications/sending-messages-with-web-push-libraries
+ * subscribe user
+ * ss: add subsciption to redis 
+ * ss: run getStatus, if cancelled or delayed get subsciptions and send push
+ * unsubscribe user
+ */
 let Store = {
 	state: {
 		stationOut:'isd',
@@ -84,6 +91,8 @@ const App = {
 			console.log('event',payload)
 			Store.state.stationDept = payload;
 		});
+		App.registerServiceWorker();
+		App.askPushPermission();
 		Store.state.outList = await App.getStatus('Kb', 'G', '06:44', '08:00');
 		Store.state.returnList = await App.getStatus('G', 'Kb', '14:54', '17:30');
 	},
@@ -144,15 +153,15 @@ const App = {
 			<INCLUDE>EstimatedTimeIsPreliminary</INCLUDE>
 		</QUERY>
 		</REQUEST>`;
-		let r = new Request('https://api.trafikinfo.trafikverket.se/v1.2/data.json',{
+		const r = new Request('https://api.trafikinfo.trafikverket.se/v1.2/data.json',{
 			method: 'POST',
 			headers: {
 				"Content-Type": "text/xml"
 			},
 			body: body
 		});
-		let data = await fetch(r);
-		let res = await data.json();
+		const data = await fetch(r);
+		const res = await data.json();
 		const out = [];
 		if (res.RESPONSE.RESULT) {
 			res.RESPONSE.RESULT[0].TrainAnnouncement.forEach((t) => {
@@ -172,9 +181,34 @@ const App = {
 				});
 			});
 		}
-		//Store.state.outList = out;
 		console.log(out);
 		return out;
-	}
+	},
+	registerServiceWorker: () => {
+		return navigator.serviceWorker.register('./psw.js')
+		.then(function(registration) {
+		  console.log('Service worker successfully registered.');
+		  return registration;
+		})
+		.catch(function(err) {
+		  console.error('Unable to register service worker.', err);
+		});
+	},
+	askPushPermission: () => {
+		return new Promise(function(resolve, reject) {
+		  const permissionResult = Notification.requestPermission(function(result) {
+			resolve(result);
+		  });
+	  
+		  if (permissionResult) {
+			permissionResult.then(resolve, reject);
+		  }
+		})
+		.then(function(permissionResult) {
+		  if (permissionResult !== 'granted') {
+			throw new Error('We weren\'t granted permission.');
+		  }
+		});
+	  }
 };
 
