@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Sträckstatus</title>
+	<meta name="theme-color" content="#696969">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+	    body {	        
+	        font-family: 'Roboto', sans-serif;
+	    }
+	    h1,h2,h3 {
+	    	font-family: 'Montserrat', sans-serif;
+	    }
+	    h1 {
+	    	font-size: 2em;
+	    	display: inline;
+	    }
+	    h2 {
+	    	font-size: 1.5em;
+	    }
+	    input,select {
+	    	font-family: 'Roboto', sans-serif;
+	    }
+	    input[type="number"] {
+	    	font-family: 'Roboto', sans-serif;
+	    	width: 3em;
+	    }
+	    button {
+	    	font-family: 'Roboto', sans-serif;
+			font-size: 1.2em;
+	    	background: none;
+	    	box-shadow:none;
+ 			border-radius: 0px;
+ 			border-width: thin;
+ 			border-style: solid;
+ 			border-color: black;
+	    }
+	    button:hover {
+	    	opacity: 0.8;
+	    }
+	    :disabled {
+	    	border-color: grey;
+	    	opacity: 1;
+	    }
+	    img.resize {
+			width:2em; /* you can use % */
+			height: auto;
+			vertical-align: text-bottom;
+		}
+		.con {
+			max-width: 55em;
+	        margin: 0 auto;
+		}
+
+		#artwork img {
+			width: 75%;
+			min-width: 30%;
+			height: auto;
+		}
+		.highlight {
+			font-size: 1.2em;
+			font-family: 'Montserrat', sans-serif;
+			color: grey;
+			font-style: italic;
+		}
+		.departed {
+			color: grey;
+		}
+		.red {
+			color: red;
+		}
+		.cancelled {
+			text-decoration: line-through;
+			color: red;
+		}
+	</style>
+	<link href="https://fonts.googleapis.com/css?family=Montserrat|Roboto" rel="stylesheet">
+</head>
+<body>
+<div id="viewRoot">
+
+	<div class="con">
+		<h1>{{new Date().format('yyyy-mm-dd')}}</h1>
+		<departures-list></departures-list>
+
+	</div>
+</div>
+	<script type="text/javascript" src="vue.js"></script>
+	<script type="text/javascript" src="date.format.js"></script>
+	<script type="text/javascript" src="app.js"></script>
+	<script>
+	App.init();
+	</script>
+
+</body>
+</html>
