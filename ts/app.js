@@ -44,6 +44,7 @@ Vue.component('departures-list', {
 	{{t.owner}}
 	<span v-for="d in t.deviation">{{d}} </span>
 	<span>{{t.atstation ? t.atstation.format('HH:MM') : ''}}</span>
+	({{t.lastmodified.format('HH:MM')}})
    </li></ul>
    <ul><li v-bind:class="{departed: t.atstation}" v-for="(t, idx) in shared.returnList">
    <span v-bind:class="{cancelled: t.iscancelled}">{{t.scheduled.format('HH:MM')}}</span>
@@ -52,6 +53,7 @@ Vue.component('departures-list', {
    {{t.owner}}
    <span v-for="d in t.deviation">{{d}} </span>
    <span>{{t.atstation ? t.atstation.format('HH:MM') : ''}}</span>
+   ({{t.lastmodified.format('HH:MM')}})
   </li></ul>   
    </div>`,
    data: () => {
