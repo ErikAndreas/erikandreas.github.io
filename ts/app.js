@@ -1,4 +1,5 @@
 "use strict"
+// @ts-check
 /**
  * https://developers.google.com/web/fundamentals/push-notifications/sending-messages-with-web-push-libraries
  * subscribe user
@@ -91,10 +92,15 @@ const App = {
 			console.log('event',payload)
 			Store.state.stationDept = payload;
 		});
-		App.registerServiceWorker();
-		App.askPushPermission();
+		
 		Store.state.outList = await App.getStatus('Kb', 'G', '06:44', '08:00');
 		Store.state.returnList = await App.getStatus('G', 'Kb', '14:54', '17:30');
+		const registration = await App.registerServiceWorker();
+		// not ready on 'prod' (no backend)
+		if (window.location.hostname != 'www.nyhren.se') {
+			App.askPushPermission();
+			App.subscribeUserToPush(registration);
+		}
 	},
 	getStations: async () => {
 		let body = "<REQUEST>" +
@@ -209,6 +215,35 @@ const App = {
 			throw new Error('We weren\'t granted permission.');
 		  }
 		});
-	  }
+	},
+	urlBase64ToUint8Array: (base64String) => {
+		const padding = '='.repeat((4 - base64String.length % 4) % 4);
+		const base64 = (base64String + padding)
+		  .replace(/\-/g, '+')
+		  .replace(/_/g, '/')
+		;
+		const rawData = window.atob(base64);
+		return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+	},
+	subscribeUserToPush: async (registration) => {
+		let subscription = await registration.pushManager.getSubscription();
+		if (!subscription) {
+			const subscribeOptions = {
+				userVisibleOnly: true,
+				applicationServerKey: App.urlBase64ToUint8Array('BI2aCJE6JmMHQfTTHprY1l-tob0Kgb7JfKpVTWOrbqtwoiYYmwSoxBDvH9mcbwOteaV5yUR9IlWxNVMyMyUGn-k')
+			};
+			// subscribe requires notification permission
+			subscription = await registration.pushManager.subscribe(subscribeOptions);
+			fetch('http://localhost:5000/save-subscription', {
+				method: 'POST',
+				headers: {
+				  'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(subscription)
+			  });
+		}
+		console.log('Got PushSubscription: ', JSON.stringify(subscription));
+		return subscription;
+	}
 };
 
