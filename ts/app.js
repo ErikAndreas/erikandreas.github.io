@@ -13,7 +13,21 @@ let Store = {
 		stationReturn:'',
 		stations: [],
 		outList: [],
-		returnList:[]
+		returnList:[],
+		trip: {
+			out: {
+				from: 'Kb',
+				to: 'G',
+				start: '06:44',
+				end: '08:30'
+			},
+			return: {
+				from: 'G',
+				to: 'Kb',
+				start: '14:59',
+				end: '18:00'
+			}
+		}
 	}
 };
 
@@ -45,7 +59,9 @@ Vue.component('station-list', {
 });
 
 Vue.component('departures-list', {
-	template: `<div><ul><li v-bind:class="{departed: t.atstation}" v-for="(t, idx) in shared.outList">
+	template: `<div>
+	<input ref="input" type="time" v-model="shared.trip.out.start"/> - <input ref="input" type="time" v-model="shared.trip.out.end"/> <button @click="getStatusOut">Refresh</button>
+	<ul><li v-bind:class="{departed: t.atstation}" v-for="(t, idx) in shared.outList">
 	<span v-bind:class="{cancelled: t.iscancelled}">{{t.scheduled.format('HH:MM')}}</span>
 	<span v-if="t.newtime" class="red">{{t.newtime.format('HH:MM')}}</span>
 	Spår {{t.track}}
@@ -54,6 +70,7 @@ Vue.component('departures-list', {
 	<span>{{t.atstation ? t.atstation.format('HH:MM') : ''}}</span>
 	({{t.lastmodified.format('HH:MM')}})
    </li></ul>
+   <input ref="input" type="time" v-model="shared.trip.return.start"/> - <input ref="input" type="time" v-model="shared.trip.return.end"/> <button @click="getStatusReturn">Refresh</button>
    <ul><li v-bind:class="{departed: t.atstation}" v-for="(t, idx) in shared.returnList">
    <span v-bind:class="{cancelled: t.iscancelled}">{{t.scheduled.format('HH:MM')}}</span>
    <span v-if="t.newtime" class="red">{{t.newtime.format('HH:MM')}}</span>
@@ -68,6 +85,10 @@ Vue.component('departures-list', {
 	   return {
 		   shared:Store.state
 	   }
+   },
+   methods: {
+	   getStatusOut() { App.getStatusOut(); },
+	   getStatusReturn() { App.getStatusReturn(); }
    }
 })
 
@@ -93,14 +114,28 @@ const App = {
 			Store.state.stationDept = payload;
 		});
 		
-		Store.state.outList = await App.getStatus('Kb', 'G', '06:44', '08:00');
-		Store.state.returnList = await App.getStatus('G', 'Kb', '14:54', '17:30');
+		App.getStatusOut();
+		App.getStatusReturn();
 		const registration = await App.registerServiceWorker();
 		// not ready on 'prod' (no backend)
 		if (window.location.hostname != 'www.nyhren.se') {
 			App.askPushPermission();
 			App.subscribeUserToPush(registration);
 		}
+	},
+	getStatusOut: async () => {
+		Store.state.outList = await App.getStatus(
+			Store.state.trip.out.from,
+			Store.state.trip.out.to,
+			Store.state.trip.out.start,
+			Store.state.trip.out.end);
+	},
+	getStatusReturn: async () => {
+		Store.state.returnList = await App.getStatus(
+			Store.state.trip.return.from,
+			Store.state.trip.return.to,
+			Store.state.trip.return.start,
+			Store.state.trip.return.end);
 	},
 	getStations: async () => {
 		let body = "<REQUEST>" +
@@ -234,6 +269,7 @@ const App = {
 			};
 			// subscribe requires notification permission
 			subscription = await registration.pushManager.subscribe(subscribeOptions);
+			console.info("UA subscribed, will call server to store subscribtion");
 			fetch('http://localhost:5000/save-subscription', {
 				method: 'POST',
 				headers: {
@@ -242,7 +278,7 @@ const App = {
 				body: JSON.stringify(subscription)
 			  });
 		}
-		console.log('Got PushSubscription: ', JSON.stringify(subscription));
+		//console.log('Got PushSubscription: ', JSON.stringify(subscription));
 		return subscription;
 	}
 };
