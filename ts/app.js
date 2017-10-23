@@ -19,13 +19,15 @@ let Store = {
 				from: 'Kb',
 				to: 'G',
 				start: '06:44',
-				end: '08:30'
+				end: '08:30',
+				notify: false
 			},
 			return: {
 				from: 'G',
 				to: 'Kb',
 				start: '14:59',
-				end: '18:00'
+				end: '18:00',
+				notify: false
 			}
 		}
 	}
@@ -260,6 +262,7 @@ const App = {
 		const rawData = window.atob(base64);
 		return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
 	},
+	// TODO add param out|return to identify which status to get and store on server, unsub removes from out|return on server
 	subscribeUserToPush: async (registration) => {
 		let subscription = await registration.pushManager.getSubscription();
 		if (!subscription) {
