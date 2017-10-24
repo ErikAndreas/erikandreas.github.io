@@ -108,7 +108,7 @@ const View = new Vue({
 
 const App = {
 	
-	init: async function() {
+	init: async () => {
 		console.log('app');
 
 		EventBus.$on(EventBus.event.STATION_CHANGED, (payload) => {
@@ -227,31 +227,22 @@ const App = {
 		console.log(out);
 		return out;
 	},
-	registerServiceWorker: () => {
-		return navigator.serviceWorker.register('./psw.js')
-		.then(function(registration) {
-		  console.log('Service worker successfully registered.');
-		  return registration;
-		})
-		.catch(function(err) {
-		  console.error('Unable to register service worker.', err);
-		});
+	registerServiceWorker: async () => {
+		let registration;
+		try {
+			registration = await navigator.serviceWorker.register('./psw.js')
+			console.log('Service worker successfully registered.');
+		} catch(err) {
+		  	console.error('Unable to register service worker.', err);
+		}
+		return registration;		
 	},
-	askPushPermission: () => {
-		return new Promise(function(resolve, reject) {
-		  const permissionResult = Notification.requestPermission(function(result) {
-			resolve(result);
-		  });
-	  
-		  if (permissionResult) {
-			permissionResult.then(resolve, reject);
-		  }
-		})
-		.then(function(permissionResult) {
-		  if (permissionResult !== 'granted') {
+	askPushPermission: async () => {
+		const permissionResult = await Notification.requestPermission();
+		if (permissionResult !== 'granted') {
 			throw new Error('We weren\'t granted permission.');
-		  }
-		});
+		}
+		return permissionResult;
 	},
 	urlBase64ToUint8Array: (base64String) => {
 		const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -270,6 +261,8 @@ const App = {
 				userVisibleOnly: true,
 				applicationServerKey: App.urlBase64ToUint8Array('BI2aCJE6JmMHQfTTHprY1l-tob0Kgb7JfKpVTWOrbqtwoiYYmwSoxBDvH9mcbwOteaV5yUR9IlWxNVMyMyUGn-k')
 			};
+			// registration might not yet be in proper ready state, wait for it...
+			await navigator.serviceWorker.ready;
 			// subscribe requires notification permission
 			subscription = await registration.pushManager.subscribe(subscribeOptions);
 			console.info("UA subscribed, will call server to store subscribtion");

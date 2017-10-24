@@ -1,4 +1,4 @@
-self.addEventListener('push', function(event) {
+self.addEventListener('push', (event) => {
     if (event.data) {
       console.log('This push event has data: ', event.data.text());
       const data = event.data.json();
@@ -18,30 +18,31 @@ self.addEventListener('install', event => {
   console.log('install, skipped waiting');
 });
 
-self.addEventListener('notificationclick', function(event) {
-  console.log('click from notification');
-  const page = '/ts/';
-  const urlToOpen = new URL(page, self.location.origin).href;
-  const promiseChain = clients.matchAll({
+const winToOpen = async (urlToOpen) => {
+  const windowClients = await clients.matchAll({
     type: 'window',
     includeUncontrolled: true
-  })
-  .then((windowClients) => {
-    let matchingClient = null;
-
-    for (let i = 0; i < windowClients.length; i++) {
-      const windowClient = windowClients[i];
-      if (windowClient.url === urlToOpen) {
-        matchingClient = windowClient;
-        break;
-      }
-    }
-
-    if (matchingClient) {
-      return matchingClient.focus();
-    } else {
-      return clients.openWindow(urlToOpen);
-    }
   });
-  event.waitUntil(promiseChain);
+  let matchingClient = null;
+
+  for (let i = 0; i < windowClients.length; i++) {
+    const windowClient = windowClients[i];
+    if (windowClient.url === urlToOpen) {
+      matchingClient = windowClient;
+      break;
+    }
+  }
+
+  if (matchingClient) {
+    return matchingClient.focus();
+  } else {
+    return clients.openWindow(urlToOpen);
+  }
+}
+
+self.addEventListener('notificationclick', (event) => {
+  console.log('click from notification!');
+  const page = '/ts/';
+  const urlToOpen = new URL(page, self.location.origin).href;
+  event.waitUntil(winToOpen(urlToOpen));
 });
