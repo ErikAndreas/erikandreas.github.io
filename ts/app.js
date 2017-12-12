@@ -271,7 +271,7 @@ const App = {
 				headers: {
 				  'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(subscription)
+				body: {"subscription": JSON.stringify(subscription)}
 			  });
 		}
 		//console.log('Got PushSubscription: ', JSON.stringify(subscription));

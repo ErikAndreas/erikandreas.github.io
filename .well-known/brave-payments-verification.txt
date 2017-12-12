@@ -1,0 +1,4 @@
+This is a Brave Payments publisher verification file.
+
+Domain: nyhren.se
+Token: 87bc5bb266a4f7b6b07cd0b15f2bf873743a79727a864d908e3cfd77c6ab55c3
