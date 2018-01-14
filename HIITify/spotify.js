@@ -57,7 +57,7 @@ const Spotify = {
 			});			
 	},
 	getPlayLists: function(offset, limit) {
-		return fetch(Spotify.req("https://api.spotify.com/v1/users/spoteafy/playlists?limit="+limit+"&offset="+offset))
+		return fetch(Spotify.req("https://api.spotify.com/v1/users/"+Spotify.userId+"/playlists?limit="+limit+"&offset="+offset))
 			.then(Spotify.handleErrors)
 			.then((response) => {return response.json();});
 	},
