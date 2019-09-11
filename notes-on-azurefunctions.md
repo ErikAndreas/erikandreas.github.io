@@ -12,7 +12,7 @@ Gathering my notes etc on issues, gotchas and learnings on Azure Functions.
 * https://github.com/Azure/azure-sdk-for-net/issues/7208 Storage Emulator won't work for Storage SDK > 11
 * https://github.com/MicrosoftDocs/azure-docs/issues/31910 App settings env confusion
 * https://github.com/Azure/azure-webjobs-sdk/issues/1876 Dependency errors in App Insights
-* https://stackoverflow.com/a/54842181 Table input binding "leaking" exceptions
+* https://stackoverflow.com/a/54842181 Table input binding "leaking" exceptions (don't use IAsyncCollector<>)
 
 
 ## Gotchas
