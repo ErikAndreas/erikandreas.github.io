@@ -12,7 +12,11 @@ Gathering my notes etc on issues, gotchas and learnings on Azure Functions.
 * https://github.com/Azure/azure-sdk-for-net/issues/7208 Storage Emulator won't work for Storage SDK > 11
 * https://github.com/MicrosoftDocs/azure-docs/issues/31910 App settings env confusion
 * https://github.com/Azure/azure-webjobs-sdk/issues/1876 Dependency errors in App Insights
+* https://stackoverflow.com/a/54842181 Table input binding "leaking" exceptions
 
+
+## Gotchas
+* I've had major issues in projects where any dependency has Microsoft.Azure.Storage.* as a dependency. Bindings failing and whatnot. Related: https://github.com/Azure/azure-functions-host/issues/3784
 ## Notes
 * leverage input bindings
 * output bindings are prolly a bad idea for http triggered functions
