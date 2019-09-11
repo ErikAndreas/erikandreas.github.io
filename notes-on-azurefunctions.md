@@ -52,6 +52,12 @@ az eventgrid event-subscription create --resource-id <signalr resource id from p
 * https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference
 * https://docs.microsoft.com/en-us/azure/azure-functions/functions-app-settings
 * https://docs.microsoft.com/en-us/azure/azure-functions/functions-host-json
+* https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-class-library
+* https://docs.microsoft.com/en-us/azure/azure-functions/functions-best-practices
+* blob triggers https://docs.microsoft.com/en-us/azure/azure-functions/functions-scale#how-the-consumption-plan-works
+* https://docs.microsoft.com/en-us/sandbox/functions-recipes/routes?tabs=csharp#define-the-function-route-in-the-azure-portal
+
+ClaimsPrinicipal injected https://azure.microsoft.com/en-us/blog/simplifying-security-for-serverless-and-web-apps-with-azure-functions-and-app-service/
 ### Azure DevOps Pipelines
 * https://medium.com/microsoftazure/serverless-devops-and-ci-cd-part-2-b6e0a6d05530
 * https://www.forevolve.com/en/articles/2018/07/10/how-to-deploy-and-host-a-jekyll-website-in-azure-blob-storage-using-a-vsts-continuous-deployment-pipeline-part-2/
