@@ -34,14 +34,17 @@ Key Vault (filed [issue on docs](https://github.com/MicrosoftDocs/azure-docs/iss
 3. turn on managed identity for app  https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity#using-the-azure-portal
 4. create access policy for key vault
 ```powershell
-az keyvault set-policy --name <Key Vaul tName> --object-id <System assigned identity of func app> --secret-permissions get --subscription <Subscription name>
+az keyvault set-policy --name <Key Vault Name> --object-id <System assigned identity of func app> --secret-permissions get --subscription <Subscription name>
 ```
-5. Set app setting value '@Microsoft.KeyVault(SecretUri=<uri of keyvault secret>)'
+5. Set app setting value 
+```powershell
+@Microsoft.KeyVault(SecretUri=<uri of keyvault secret>)
+```
 ### Azure SignalR connection events
 connected events from signal via eventgrid  https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/EventGridIntegration#create-a-subscription
 1. ngrok http -host-header=localhost 7071
 2. (if not already done) Azure portal, subscription, resource provider, (search) register Microsoft.EventGrid
-3. 
+3. Az CLI
 ```powershell
 az eventgrid event-subscription create --resource-id <signalr resource id from properties blade in portal> --name <event grid setup name> --endpoint https://<your id>.ngrok.io/runtime/webhooks/eventgrid?functionName=OnConnection
 ```
