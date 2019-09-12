@@ -28,7 +28,7 @@ npm update -g azure-functions-core-tools
 ```
 
 ### Using Azure Key Vault transparently as App Settings
-Key Vault (filed [issue on docs](https://github.com/MicrosoftDocs/azure-docs/issues/29869):
+Key Vault (filed [issue on docs](https://github.com/MicrosoftDocs/azure-docs/issues/29869)):
 1. create a key vault
 2. add one or more secrets
 3. turn on managed identity for app  https://docs.microsoft.com/en-us/azure/app-service/overview-managed-identity#using-the-azure-portal
