@@ -48,7 +48,16 @@ connected events from signal via eventgrid  https://github.com/aspnet/AzureSigna
 ```powershell
 az eventgrid event-subscription create --resource-id <signalr resource id from properties blade in portal> --name <event grid setup name> --endpoint https://<your id>.ngrok.io/runtime/webhooks/eventgrid?functionName=OnConnection
 ```
+### Publish profile Deploy with Visual Studio
+Having multiple profiles in Visual Studio and using a Publish profile to deploy sometimes failes publish with "Unable to update the Functions Extensions Version in Azure Application Settings because...". I've only been able to resolve this by logging out of all other accounts than the one with permissions in the target App Service.
 
+Another issue has been file locks during deploy which are resolved by adding
+```xml
+    <EnableMSDeployAppOffline>true</EnableMSDeployAppOffline>
+  </PropertyGroup>
+</Project>
+```
+to the web deploy.pubxml file.
 ## Resources
 * https://github.com/Azure/azure-webjobs-sdk-extensions
 * https://dev.to/azure/threat-modelling-serverless-500k
