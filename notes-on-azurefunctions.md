@@ -58,6 +58,18 @@ Another issue has been file locks during deploy which are resolved by adding
 </Project>
 ```
 to the web deploy.pubxml file.
+### Entity Framework Core
+#### Migrations
+In project with class extending DbContext:
+* Install (latest on 2.x, 3.x not supported by .net core 2.2 which is current functions runtime):
+  * Install-Package Microsoft.EntityFrameworkCore.Design -Version 2.2.x
+  * Install-Package Microsoft.EntityFrameworkCore.Tools -Version 2.2.x
+* Create ContextFactory class impl IDesignTimeDbContextFactory
+* Set project with DbContext as Startup project
+* Run: 
+  * PM> $env:SqlConnectionString="Data Source=.\SQLEXPRESS;Database=_nnn_;Trusted_Connection=True;"
+  * PM> Add-Migration InitialCreate
+  * PM> Update-Database
 ## Resources
 * https://github.com/Azure/azure-webjobs-sdk-extensions
 * https://dev.to/azure/threat-modelling-serverless-500k
